@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Sparkles, Layout, ImageIcon, ChevronRight, ChevronLeft, Play, Download, Save, FileDown } from "lucide-react";
+import { Sparkles, Layout, ImageIcon, ChevronRight, ChevronLeft, Play, Download, Save, FileDown, ExternalLink } from "lucide-react";
 import { toast } from "sonner";
 import { generatePresentationMarkdown, generatePresentationJson } from "@/services/presentationApi";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
@@ -88,8 +88,9 @@ const PresentationEditor = () => {
         response = await generatePresentationJson(request);
       }
       
+      console.log("Download URL:", response.download_url);
       setDownloadUrl(response.download_url);
-      toast.success("Presentation export successful!");
+      toast.success("Presentation export successful! Click the download button to get your file.");
     } catch (error) {
       console.error("Export error:", error);
       toast.error("Failed to export presentation. Please try again.");
@@ -214,12 +215,34 @@ const PresentationEditor = () => {
                         Download
                       </Label>
                       <div className="col-span-3">
-                        <Button asChild variant="outline" className="w-full">
+                        <Button asChild variant="default" className="w-full">
                           <a href={downloadUrl} target="_blank" rel="noopener noreferrer" className="flex items-center justify-center gap-2">
                             <FileDown size={16} />
                             Download PowerPoint
                           </a>
                         </Button>
+                      </div>
+                    </div>
+                  )}
+                  {downloadUrl && (
+                    <div className="grid grid-cols-4 items-center gap-4">
+                      <Label className="text-right">
+                        Direct Link
+                      </Label>
+                      <div className="col-span-3">
+                        <div className="flex items-center gap-2">
+                          <Input value={downloadUrl} readOnly className="text-xs" />
+                          <Button 
+                            variant="outline" 
+                            size="icon"
+                            onClick={() => {
+                              navigator.clipboard.writeText(downloadUrl);
+                              toast.success("URL copied to clipboard!");
+                            }}
+                          >
+                            <ExternalLink size={16} />
+                          </Button>
+                        </div>
                       </div>
                     </div>
                   )}

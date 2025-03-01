@@ -3,7 +3,7 @@
  * Service for communicating with the AI Presentation Generator API
  */
 
-const API_BASE_URL = 'http://pptx.techrealm.online';
+const API_BASE_URL = 'https://pptx.techrealm.online';
 
 export interface GeneratePresentationRequest {
   topic: string;
@@ -23,6 +23,7 @@ export const generatePresentationMarkdown = async (
   request: GeneratePresentationRequest
 ): Promise<GeneratePresentationResponse> => {
   try {
+    console.log('Sending request to markdown endpoint:', request);
     const response = await fetch(`${API_BASE_URL}/generate-presentation/markdown`, {
       method: 'POST',
       headers: {
@@ -35,7 +36,9 @@ export const generatePresentationMarkdown = async (
       throw new Error(`API error: ${response.status} ${response.statusText}`);
     }
 
-    return await response.json();
+    const data = await response.json();
+    console.log('API response:', data);
+    return data;
   } catch (error) {
     console.error('Error generating presentation:', error);
     throw error;
@@ -51,6 +54,7 @@ export const generatePresentationJson = async (
   request: GeneratePresentationRequest
 ): Promise<GeneratePresentationResponse> => {
   try {
+    console.log('Sending request to JSON endpoint:', request);
     const response = await fetch(`${API_BASE_URL}/generate-presentation/json`, {
       method: 'POST',
       headers: {
@@ -63,7 +67,9 @@ export const generatePresentationJson = async (
       throw new Error(`API error: ${response.status} ${response.statusText}`);
     }
 
-    return await response.json();
+    const data = await response.json();
+    console.log('API response:', data);
+    return data;
   } catch (error) {
     console.error('Error generating presentation:', error);
     throw error;
