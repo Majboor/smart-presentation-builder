@@ -4,14 +4,22 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Sparkles, Layout, ImageIcon, ChevronRight, ChevronLeft, Play, Download, Save } from "lucide-react";
+import { Sparkles, Layout, ImageIcon, ChevronRight, ChevronLeft, Play, Download, Save, FileDown } from "lucide-react";
 import { toast } from "sonner";
+import { generatePresentationMarkdown, generatePresentationJson } from "@/services/presentationApi";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
 
 const PresentationEditor = () => {
   const [loading, setLoading] = useState(false);
   const [prompt, setPrompt] = useState("");
   const [title, setTitle] = useState("Untitled Presentation");
   const [currentSlide, setCurrentSlide] = useState(0);
+  const [exportLoading, setExportLoading] = useState(false);
+  const [exportType, setExportType] = useState<"markdown" | "json">("markdown");
+  const [numSlides, setNumSlides] = useState(5);
+  const [downloadUrl, setDownloadUrl] = useState("");
+  const [exportDialogOpen, setExportDialogOpen] = useState(false);
   const [slides, setSlides] = useState<Array<{ title: string; content: string; image?: string }>>([
     {
       title: "Welcome to Your Presentation",
@@ -64,6 +72,31 @@ const PresentationEditor = () => {
       setCurrentSlide(0);
       toast.success("Presentation generated successfully!");
     }, 2000);
+  };
+
+  const handleExportPowerPoint = async () => {
+    try {
+      setExportLoading(true);
+      const request = {
+        topic: title,
+        num_slides: numSlides
+      };
+      
+      let response;
+      if (exportType === "markdown") {
+        response = await generatePresentationMarkdown(request);
+      } else {
+        response = await generatePresentationJson(request);
+      }
+      
+      setDownloadUrl(response.download_url);
+      toast.success("Presentation export successful!");
+    } catch (error) {
+      console.error("Export error:", error);
+      toast.error("Failed to export presentation. Please try again.");
+    } finally {
+      setExportLoading(false);
+    }
   };
 
   const handleSlideChange = (direction: "prev" | "next") => {
@@ -133,10 +166,76 @@ const PresentationEditor = () => {
               <Play size={16} />
               Present
             </Button>
-            <Button variant="outline" size="sm" className="gap-1">
-              <Download size={16} />
-              Export
-            </Button>
+            <Dialog open={exportDialogOpen} onOpenChange={setExportDialogOpen}>
+              <DialogTrigger asChild>
+                <Button variant="outline" size="sm" className="gap-1">
+                  <Download size={16} />
+                  Export
+                </Button>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Export Presentation</DialogTitle>
+                  <DialogDescription>
+                    Generate a PowerPoint presentation based on your current content.
+                  </DialogDescription>
+                </DialogHeader>
+                <div className="grid gap-4 py-4">
+                  <div className="grid grid-cols-4 items-center gap-4">
+                    <Label htmlFor="export-type" className="text-right">
+                      Export Format
+                    </Label>
+                    <select 
+                      id="export-type" 
+                      className="col-span-3 flex h-10 w-full rounded-md border border-input bg-background px-3 py-2"
+                      value={exportType}
+                      onChange={(e) => setExportType(e.target.value as "markdown" | "json")}
+                    >
+                      <option value="markdown">Markdown</option>
+                      <option value="json">JSON</option>
+                    </select>
+                  </div>
+                  <div className="grid grid-cols-4 items-center gap-4">
+                    <Label htmlFor="num-slides" className="text-right">
+                      Number of Slides
+                    </Label>
+                    <Input
+                      id="num-slides"
+                      type="number"
+                      min="1"
+                      max="20"
+                      value={numSlides}
+                      onChange={(e) => setNumSlides(parseInt(e.target.value))}
+                      className="col-span-3"
+                    />
+                  </div>
+                  {downloadUrl && (
+                    <div className="grid grid-cols-4 items-center gap-4">
+                      <Label className="text-right">
+                        Download
+                      </Label>
+                      <div className="col-span-3">
+                        <Button asChild variant="outline" className="w-full">
+                          <a href={downloadUrl} target="_blank" rel="noopener noreferrer" className="flex items-center justify-center gap-2">
+                            <FileDown size={16} />
+                            Download PowerPoint
+                          </a>
+                        </Button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+                <DialogFooter>
+                  <Button 
+                    type="submit" 
+                    onClick={handleExportPowerPoint}
+                    disabled={exportLoading}
+                  >
+                    {exportLoading ? "Generating..." : "Generate PowerPoint"}
+                  </Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
           </div>
         </div>
       </header>
