@@ -1,9 +1,10 @@
+
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Sparkles, Layout, ImageIcon, ChevronRight, ChevronLeft, Play, Download, Save, FileDown, ExternalLink } from "lucide-react";
+import { Sparkles, Layout, ImageIcon, ChevronRight, ChevronLeft, Play, Download, Save, FileDown, ExternalLink, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { generatePresentationMarkdown, generatePresentationJson } from "@/services/presentationApi";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
@@ -19,6 +20,7 @@ const PresentationEditor = () => {
   const [numSlides, setNumSlides] = useState(5);
   const [downloadUrl, setDownloadUrl] = useState("");
   const [exportDialogOpen, setExportDialogOpen] = useState(false);
+  const [incomingSlides, setIncomingSlides] = useState(false);
   const [slides, setSlides] = useState<Array<{ title: string; content: string; image?: string }>>([
     {
       title: "Welcome to Your Presentation",
@@ -34,6 +36,7 @@ const PresentationEditor = () => {
     }
 
     setLoading(true);
+    setIncomingSlides(true);
     
     // Simulate AI generation with a timeout
     setTimeout(() => {
@@ -68,6 +71,7 @@ const PresentationEditor = () => {
       setSlides(generatedSlides);
       setTitle(prompt);
       setLoading(false);
+      setIncomingSlides(false);
       setCurrentSlide(0);
       toast.success("Presentation generated successfully!");
     }, 2000);
@@ -269,8 +273,14 @@ const PresentationEditor = () => {
               <TabsTrigger value="generate" className="flex-1">
                 Generate
               </TabsTrigger>
-              <TabsTrigger value="slides" className="flex-1">
+              <TabsTrigger value="slides" className="flex-1 relative">
                 Slides
+                {incomingSlides && (
+                  <div className="absolute inset-0 flex items-center justify-center bg-primary/80 text-primary-foreground text-xs font-medium rounded-md">
+                    <Loader2 size={14} className="mr-1 animate-spin" />
+                    Incoming
+                  </div>
+                )}
               </TabsTrigger>
               <TabsTrigger value="design" className="flex-1">
                 Design
@@ -296,20 +306,34 @@ const PresentationEditor = () => {
                 </div>
               </div>
               
-              <Button
-                onClick={handleGeneratePresentation}
-                className="w-full gap-1"
-                disabled={loading}
-              >
-                {loading ? (
-                  "Generating..."
-                ) : (
-                  <>
-                    Generate presentation
-                    <Sparkles size={16} />
-                  </>
-                )}
-              </Button>
+              <div className="flex gap-2">
+                <Button
+                  onClick={handleGeneratePresentation}
+                  className="flex-1 gap-1"
+                  disabled={loading}
+                >
+                  {loading ? (
+                    <>
+                      <Loader2 size={16} className="animate-spin" />
+                      Generating...
+                    </>
+                  ) : (
+                    <>
+                      Generate presentation
+                      <Sparkles size={16} />
+                    </>
+                  )}
+                </Button>
+                
+                <Button 
+                  variant="outline" 
+                  onClick={() => setExportDialogOpen(true)}
+                  className="gap-1"
+                >
+                  <Download size={16} />
+                  Export
+                </Button>
+              </div>
               
               <div className="pt-4 border-t border-border">
                 <h3 className="text-sm font-medium mb-3">Templates</h3>
