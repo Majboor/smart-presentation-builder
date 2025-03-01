@@ -90,7 +90,7 @@ const PresentationEditor = () => {
       
       console.log("Download URL:", response.download_url);
       setDownloadUrl(response.download_url);
-      toast.success("Presentation export successful! Click the download button to get your file.");
+      toast.success("Presentation export successful! Click the link to open your presentation.");
     } catch (error) {
       console.error("Export error:", error);
       toast.error("Failed to export presentation. Please try again.");
@@ -212,13 +212,13 @@ const PresentationEditor = () => {
                   {downloadUrl && (
                     <div className="grid grid-cols-4 items-center gap-4">
                       <Label className="text-right">
-                        Download
+                        Presentation
                       </Label>
                       <div className="col-span-3">
                         <Button asChild variant="default" className="w-full">
                           <a href={downloadUrl} target="_blank" rel="noopener noreferrer" className="flex items-center justify-center gap-2">
-                            <FileDown size={16} />
-                            Download PowerPoint
+                            <ExternalLink size={16} />
+                            Open Presentation
                           </a>
                         </Button>
                       </div>
