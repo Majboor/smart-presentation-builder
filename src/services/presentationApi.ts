@@ -15,6 +15,18 @@ export interface GeneratePresentationResponse {
 }
 
 /**
+ * Converts HTTP URLs to HTTPS
+ * @param url URL string that might be HTTP
+ * @returns The same URL with HTTPS protocol
+ */
+export const ensureHttps = (url: string): string => {
+  if (url.startsWith('http:')) {
+    return url.replace('http:', 'https:');
+  }
+  return url;
+};
+
+/**
  * Generate a presentation using the markdown endpoint
  * @param request Request parameters including topic and optional num_slides
  * @returns Response with download URL
@@ -38,6 +50,12 @@ export const generatePresentationMarkdown = async (
 
     const data = await response.json();
     console.log('API response:', data);
+    
+    // Convert HTTP URLs to HTTPS
+    if (data.download_url) {
+      data.download_url = ensureHttps(data.download_url);
+    }
+    
     return data;
   } catch (error) {
     console.error('Error generating presentation:', error);
@@ -69,6 +87,12 @@ export const generatePresentationJson = async (
 
     const data = await response.json();
     console.log('API response:', data);
+    
+    // Convert HTTP URLs to HTTPS
+    if (data.download_url) {
+      data.download_url = ensureHttps(data.download_url);
+    }
+    
     return data;
   } catch (error) {
     console.error('Error generating presentation:', error);

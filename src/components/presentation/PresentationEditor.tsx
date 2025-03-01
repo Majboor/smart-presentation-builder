@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -6,12 +5,11 @@ import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Sparkles, Layout, ImageIcon, ChevronRight, ChevronLeft, Play, Download, Save, FileDown, ExternalLink, Loader2 } from "lucide-react";
 import { toast } from "sonner";
-import { generatePresentationMarkdown, generatePresentationJson } from "@/services/presentationApi";
+import { generatePresentationMarkdown, generatePresentationJson, ensureHttps } from "@/services/presentationApi";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { useNavigate } from "react-router-dom";
 
-// Template prompts for different presentation styles
 const templatePrompts = {
   Business: "Create a professional business presentation about {topic}. Include sections for executive summary, market analysis, competitive landscape, strategy, implementation plan, and financial projections.",
   Creative: "Design a visually engaging and creative presentation about {topic}. Use metaphors, storytelling elements, and compelling visuals to create an inspiring narrative that captures imagination.",
@@ -158,7 +156,6 @@ const PresentationEditor = () => {
   };
 
   const handlePresentationMode = () => {
-    // Mock presentation ID - in a real app this would be a real ID
     const presentationId = "demo";
     navigate(`/present/${presentationId}`, { state: { slides, title } });
   };
