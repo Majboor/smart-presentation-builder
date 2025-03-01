@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -191,8 +190,8 @@ const PresentationEditor = () => {
                       value={exportType}
                       onChange={(e) => setExportType(e.target.value as "markdown" | "json")}
                     >
-                      <option value="markdown">Markdown</option>
-                      <option value="json">JSON</option>
+                      <option value="markdown">Fast</option>
+                      <option value="json">Precise</option>
                     </select>
                   </div>
                   <div className="grid grid-cols-4 items-center gap-4">
