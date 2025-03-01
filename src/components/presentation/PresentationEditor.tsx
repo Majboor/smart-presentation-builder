@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -8,8 +9,18 @@ import { toast } from "sonner";
 import { generatePresentationMarkdown, generatePresentationJson } from "@/services/presentationApi";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
+import { useNavigate } from "react-router-dom";
+
+// Template prompts for different presentation styles
+const templatePrompts = {
+  Business: "Create a professional business presentation about {topic}. Include sections for executive summary, market analysis, competitive landscape, strategy, implementation plan, and financial projections.",
+  Creative: "Design a visually engaging and creative presentation about {topic}. Use metaphors, storytelling elements, and compelling visuals to create an inspiring narrative that captures imagination.",
+  Education: "Develop an educational presentation about {topic} suitable for classroom or training environments. Structure it with clear learning objectives, key concepts, examples, practice opportunities, and assessment questions.",
+  Minimal: "Create a clean, minimalist presentation about {topic} with concise text, ample white space, and only essential visuals. Focus on key messages with no more than 5 bullet points per slide."
+};
 
 const PresentationEditor = () => {
+  const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [prompt, setPrompt] = useState("");
   const [title, setTitle] = useState("Untitled Presentation");
@@ -20,6 +31,7 @@ const PresentationEditor = () => {
   const [downloadUrl, setDownloadUrl] = useState("");
   const [exportDialogOpen, setExportDialogOpen] = useState(false);
   const [incomingSlides, setIncomingSlides] = useState(false);
+  const [selectedTemplate, setSelectedTemplate] = useState<string | null>(null);
   const [slides, setSlides] = useState<Array<{ title: string; content: string; image?: string }>>([
     {
       title: "Welcome to Your Presentation",
@@ -78,8 +90,15 @@ const PresentationEditor = () => {
   const handleExportPowerPoint = async () => {
     try {
       setExportLoading(true);
+      
+      // If a template is selected, use its prompt structure
+      let finalPrompt = prompt;
+      if (selectedTemplate && templatePrompts[selectedTemplate as keyof typeof templatePrompts]) {
+        finalPrompt = templatePrompts[selectedTemplate as keyof typeof templatePrompts].replace("{topic}", prompt);
+      }
+      
       const request = {
-        topic: title,
+        topic: finalPrompt,
         num_slides: numSlides
       };
       
@@ -138,6 +157,17 @@ const PresentationEditor = () => {
     toast.success("Presentation saved successfully!");
   };
 
+  const handlePresentationMode = () => {
+    // Mock presentation ID - in a real app this would be a real ID
+    const presentationId = "demo";
+    navigate(`/present/${presentationId}`, { state: { slides, title } });
+  };
+
+  const handleTemplateSelect = (template: string) => {
+    setSelectedTemplate(template);
+    toast.success(`${template} template selected`);
+  };
+
   return (
     <div className="min-h-screen bg-secondary/20 flex flex-col">
       <header className="bg-white border-b border-border px-6 py-3 sticky top-0 z-10">
@@ -164,7 +194,12 @@ const PresentationEditor = () => {
               <Save size={16} />
               Save
             </Button>
-            <Button variant="outline" size="sm" className="gap-1">
+            <Button 
+              variant="outline" 
+              size="sm" 
+              className="gap-1"
+              onClick={handlePresentationMode}
+            >
               <Play size={16} />
               Present
             </Button>
@@ -211,6 +246,18 @@ const PresentationEditor = () => {
                       className="col-span-3"
                     />
                   </div>
+                  {selectedTemplate && (
+                    <div className="grid grid-cols-4 items-center gap-4">
+                      <Label className="text-right">
+                        Template
+                      </Label>
+                      <div className="col-span-3">
+                        <div className="p-2 bg-muted/50 rounded text-sm">
+                          Using {selectedTemplate} template
+                        </div>
+                      </div>
+                    </div>
+                  )}
                   {downloadUrl && (
                     <div className="grid grid-cols-4 items-center gap-4">
                       <Label className="text-right">
@@ -336,18 +383,17 @@ const PresentationEditor = () => {
               <div className="pt-4 border-t border-border">
                 <h3 className="text-sm font-medium mb-3">Templates</h3>
                 <div className="grid grid-cols-2 gap-2">
-                  {["Business", "Creative", "Education", "Minimal"].map(
-                    (template, index) => (
-                      <Button
-                        key={index}
-                        variant="outline"
-                        size="sm"
-                        className="h-auto py-2 justify-start"
-                      >
-                        {template}
-                      </Button>
-                    )
-                  )}
+                  {Object.keys(templatePrompts).map((template, index) => (
+                    <Button
+                      key={index}
+                      variant={selectedTemplate === template ? "default" : "outline"}
+                      size="sm"
+                      className="h-auto py-2 justify-start"
+                      onClick={() => handleTemplateSelect(template)}
+                    >
+                      {template}
+                    </Button>
+                  ))}
                 </div>
               </div>
             </TabsContent>

@@ -1,33 +1,72 @@
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { ChevronLeft, ChevronRight, ArrowLeft } from "lucide-react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams, useLocation } from "react-router-dom";
+
+interface SlideType {
+  title: string;
+  content: string;
+  image?: string;
+}
 
 const PresentationViewer = () => {
   const navigate = useNavigate();
   const { id } = useParams();
+  const location = useLocation();
   const [currentSlide, setCurrentSlide] = useState(0);
   
-  // This would come from an API in a real app
-  const [slides] = useState([
-    {
-      title: "Welcome to Your Presentation",
-      content: "Created with SlideAI",
-    },
-    {
-      title: "Key Points",
-      content: "• First important point\n• Second important point\n• Third important point",
-    },
-    {
-      title: "Data & Analysis",
-      content: "This is where you would display charts and data analysis",
-    },
-    {
-      title: "Conclusion",
-      content: "Thank you for watching!",
-    },
-  ]);
+  // Get slides from location state or use default slides
+  const [slides, setSlides] = useState<SlideType[]>([]);
+  const [title, setTitle] = useState("Presentation");
+  
+  useEffect(() => {
+    // Get data from location state if available
+    if (location.state?.slides) {
+      setSlides(location.state.slides);
+    } else {
+      // Default slides if no data is passed
+      setSlides([
+        {
+          title: "Welcome to Your Presentation",
+          content: "Created with SlideAI",
+        },
+        {
+          title: "Key Points",
+          content: "• First important point\n• Second important point\n• Third important point",
+        },
+        {
+          title: "Data & Analysis",
+          content: "This is where you would display charts and data analysis",
+        },
+        {
+          title: "Conclusion",
+          content: "Thank you for watching!",
+        },
+      ]);
+    }
+
+    if (location.state?.title) {
+      setTitle(location.state.title);
+    }
+    
+    // Set up fullscreen
+    const presentationElement = document.getElementById('presentation-container');
+    if (presentationElement) {
+      presentationElement.requestFullscreen().catch(err => {
+        console.log(`Error attempting to enable fullscreen: ${err.message}`);
+      });
+    }
+    
+    // Exit fullscreen when component unmounts
+    return () => {
+      if (document.fullscreenElement) {
+        document.exitFullscreen().catch(err => {
+          console.log(`Error attempting to exit fullscreen: ${err.message}`);
+        });
+      }
+    };
+  }, [location.state]);
 
   const handleSlideChange = (direction: "prev" | "next") => {
     if (direction === "prev" && currentSlide > 0) {
@@ -43,12 +82,14 @@ const PresentationViewer = () => {
     } else if (e.key === "ArrowLeft") {
       handleSlideChange("prev");
     } else if (e.key === "Escape") {
-      navigate(-1);
+      // Let the browser handle exiting fullscreen, then navigate
+      setTimeout(() => navigate(-1), 100);
     }
   };
 
   return (
     <div 
+      id="presentation-container"
       className="h-screen w-screen bg-black flex flex-col" 
       tabIndex={0} 
       onKeyDown={handleKeyDown}
@@ -68,9 +109,9 @@ const PresentationViewer = () => {
       
       <div className="flex-1 flex items-center justify-center">
         <div className="w-full max-w-6xl aspect-[16/9] bg-white rounded-lg p-16 flex flex-col items-center justify-center text-center">
-          <h1 className="text-5xl font-bold mb-10">{slides[currentSlide].title}</h1>
+          <h1 className="text-5xl font-bold mb-10">{slides[currentSlide]?.title}</h1>
           <div className="text-2xl whitespace-pre-line">
-            {slides[currentSlide].content}
+            {slides[currentSlide]?.content}
           </div>
         </div>
       </div>
@@ -86,7 +127,7 @@ const PresentationViewer = () => {
           Previous
         </Button>
         <div>
-          Slide {currentSlide + 1} of {slides.length}
+          {title} - Slide {currentSlide + 1} of {slides.length}
         </div>
         <Button
           variant="ghost"
