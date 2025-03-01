@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -38,7 +37,6 @@ const PresentationEditor = () => {
     setLoading(true);
     setIncomingSlides(true);
     
-    // Simulate AI generation with a timeout
     setTimeout(() => {
       const generatedSlides = [
         {
@@ -422,18 +420,28 @@ const PresentationEditor = () => {
 
         <div className="flex-1 flex flex-col">
           <div className="flex-1 p-8 flex items-center justify-center bg-secondary/30 overflow-y-auto">
-            <div className="w-full max-w-4xl aspect-[16/9] bg-white rounded-lg shadow-lg p-16 flex flex-col items-center justify-center text-center">
-              <Input
-                value={slides[currentSlide]?.title || ""}
-                onChange={handleSlideTitleChange}
-                className="text-3xl font-bold text-center border-0 focus-visible:ring-0 focus-visible:ring-offset-0 p-0 h-auto mb-8"
-              />
-              <Textarea
-                value={slides[currentSlide]?.content || ""}
-                onChange={handleSlideContentChange}
-                className="text-xl text-center border-0 focus-visible:ring-0 focus-visible:ring-offset-0 p-0 h-auto resize-none"
-              />
-            </div>
+            {downloadUrl ? (
+              <div className="w-full max-w-4xl aspect-[16/9] bg-white rounded-lg shadow-lg overflow-hidden">
+                <iframe 
+                  src={downloadUrl} 
+                  className="w-full h-full" 
+                  title="PowerPoint Presentation Preview"
+                ></iframe>
+              </div>
+            ) : (
+              <div className="w-full max-w-4xl aspect-[16/9] bg-white rounded-lg shadow-lg p-16 flex flex-col items-center justify-center text-center">
+                <Input
+                  value={slides[currentSlide]?.title || ""}
+                  onChange={handleSlideTitleChange}
+                  className="text-3xl font-bold text-center border-0 focus-visible:ring-0 focus-visible:ring-offset-0 p-0 h-auto mb-8"
+                />
+                <Textarea
+                  value={slides[currentSlide]?.content || ""}
+                  onChange={handleSlideContentChange}
+                  className="text-xl text-center border-0 focus-visible:ring-0 focus-visible:ring-offset-0 p-0 h-auto resize-none"
+                />
+              </div>
+            )}
           </div>
 
           <div className="flex items-center justify-between p-4 border-t border-border bg-white">
@@ -441,20 +449,24 @@ const PresentationEditor = () => {
               variant="outline"
               size="sm"
               onClick={() => handleSlideChange("prev")}
-              disabled={currentSlide === 0}
+              disabled={currentSlide === 0 || !!downloadUrl}
               className="gap-1"
             >
               <ChevronLeft size={16} />
               Previous
             </Button>
             <div className="text-sm">
-              Slide {currentSlide + 1} of {slides.length}
+              {downloadUrl ? (
+                <span>PowerPoint Preview</span>
+              ) : (
+                <span>Slide {currentSlide + 1} of {slides.length}</span>
+              )}
             </div>
             <Button
               variant="outline"
               size="sm"
               onClick={() => handleSlideChange("next")}
-              disabled={currentSlide === slides.length - 1}
+              disabled={currentSlide === slides.length - 1 || !!downloadUrl}
               className="gap-1"
             >
               Next
