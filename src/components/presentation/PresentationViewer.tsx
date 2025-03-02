@@ -95,7 +95,7 @@ const PresentationViewer = () => {
       onKeyDown={handleKeyDown}
       autoFocus
     >
-      <div className="absolute top-4 left-4 z-10">
+      <div className="absolute top-2 sm:top-4 left-2 sm:left-4 z-10">
         <Button
           variant="outline"
           size="sm"
@@ -103,20 +103,20 @@ const PresentationViewer = () => {
           className="gap-1 bg-white/10 hover:bg-white/20 text-white border-white/20"
         >
           <ArrowLeft size={16} />
-          Exit
+          <span className="hidden sm:inline">Exit</span>
         </Button>
       </div>
       
-      <div className="flex-1 flex items-center justify-center">
-        <div className="w-full max-w-6xl aspect-[16/9] bg-white rounded-lg p-16 flex flex-col items-center justify-center text-center">
-          <h1 className="text-5xl font-bold mb-10">{slides[currentSlide]?.title}</h1>
-          <div className="text-2xl whitespace-pre-line">
+      <div className="flex-1 flex items-center justify-center p-4">
+        <div className="w-full max-w-6xl aspect-[16/9] bg-white rounded-lg p-4 sm:p-8 md:p-16 flex flex-col items-center justify-center text-center">
+          <h1 className="text-2xl sm:text-3xl md:text-5xl font-bold mb-4 sm:mb-6 md:mb-10">{slides[currentSlide]?.title}</h1>
+          <div className="text-base sm:text-xl md:text-2xl whitespace-pre-line">
             {slides[currentSlide]?.content}
           </div>
         </div>
       </div>
       
-      <div className="flex items-center justify-between p-4 bg-black/50 text-white">
+      <div className="flex items-center justify-between p-2 sm:p-4 bg-black/50 text-white">
         <Button
           variant="ghost"
           onClick={() => handleSlideChange("prev")}
@@ -124,9 +124,9 @@ const PresentationViewer = () => {
           className="text-white hover:bg-white/10"
         >
           <ChevronLeft size={20} />
-          Previous
+          <span className="hidden sm:inline">Previous</span>
         </Button>
-        <div>
+        <div className="text-xs sm:text-sm">
           {title} - Slide {currentSlide + 1} of {slides.length}
         </div>
         <Button
@@ -135,7 +135,7 @@ const PresentationViewer = () => {
           disabled={currentSlide === slides.length - 1}
           className="text-white hover:bg-white/10"
         >
-          Next
+          <span className="hidden sm:inline">Next</span>
           <ChevronRight size={20} />
         </Button>
       </div>
