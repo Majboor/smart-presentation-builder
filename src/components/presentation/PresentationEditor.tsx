@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+
+import React, { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
 import { generatePresentationMarkdown, generatePresentationJson, ensureHttps } from "@/services/presentationApi";
@@ -43,6 +44,13 @@ const PresentationEditor = () => {
     },
   ]);
 
+  // Check subscription status on mount
+  useEffect(() => {
+    if (!canCreatePresentation()) {
+      setPaymentDialogOpen(true);
+    }
+  }, [canCreatePresentation]);
+
   const handleGeneratePresentation = () => {
     if (!prompt.trim()) {
       toast.error("Please enter a topic or description for your presentation");
@@ -51,6 +59,7 @@ const PresentationEditor = () => {
 
     if (!canCreatePresentation()) {
       setPaymentDialogOpen(true);
+      toast.info("You've used your free trial. Please subscribe for unlimited access.");
       return;
     }
 

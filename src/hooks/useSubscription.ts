@@ -31,7 +31,7 @@ export const useSubscription = () => {
   const incrementPresentationCount = () => {
     setSubscription(prev => {
       const newCount = prev.presentationsGenerated + 1;
-      const usedFreeTrial = newCount >= 1;
+      const usedFreeTrial = newCount > 0; // Mark as used after the first presentation
       
       return {
         ...prev,
