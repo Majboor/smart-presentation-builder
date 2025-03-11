@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { createPayment } from "@/services/paymentService";
 import { useSubscription } from "@/hooks/useSubscription";
@@ -16,8 +15,8 @@ const PaymentDialog: React.FC<PaymentDialogProps> = ({ open, setOpen }) => {
   const [loading, setLoading] = useState(false);
   const { setPaidStatus } = useSubscription();
   
-  // Convert 14 USD to the equivalent in AED cents (approx. 51.41 AED * 100)
-  const SUBSCRIPTION_AMOUNT = 5141.5;
+  // Set amount to exactly 5141 AED cents
+  const SUBSCRIPTION_AMOUNT = 5141;
   
   const handlePayment = async () => {
     try {
