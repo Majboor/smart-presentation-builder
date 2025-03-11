@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { createPayment } from "@/services/paymentService";
 import { useSubscription } from "@/hooks/useSubscription";
@@ -23,8 +24,8 @@ const PaymentDialog: React.FC<PaymentDialogProps> = ({ open, setOpen }) => {
       setLoading(true);
       const response = await createPayment(SUBSCRIPTION_AMOUNT);
       
-      // Open payment link in a new tab
-      window.open(response.payment_link, '_blank');
+      // Open payment URL in a new tab - using the correct field name from the API
+      window.open(response.payment_url, '_blank');
       
       // In a real app, we would check the payment status using the reference
       // For demo purposes, we'll just assume payment was successful after a delay

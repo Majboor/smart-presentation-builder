@@ -10,8 +10,8 @@ export interface CreatePaymentRequest {
 }
 
 export interface CreatePaymentResponse {
-  payment_link: string;
-  reference: string;
+  payment_url: string;
+  special_reference: string;
 }
 
 /**
