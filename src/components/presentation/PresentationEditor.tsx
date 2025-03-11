@@ -1,14 +1,15 @@
-
 import React, { useState } from "react";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
 import { generatePresentationMarkdown, generatePresentationJson, ensureHttps } from "@/services/presentationApi";
+import { useSubscription } from "@/hooks/useSubscription";
 
-// Import our new components
+// Import our components
 import Header from "./editor/Header";
 import Sidebar from "./editor/Sidebar";
 import SlidePreview from "./editor/SlidePreview";
 import ExportDialog from "./editor/ExportDialog";
+import PaymentDialog from "@/components/payment/PaymentDialog";
 
 const templatePrompts = {
   Business: "Create a professional business presentation about {topic}. Include sections for executive summary, market analysis, competitive landscape, strategy, implementation plan, and financial projections.",
@@ -31,6 +32,9 @@ const PresentationEditor = () => {
   const [incomingSlides, setIncomingSlides] = useState(false);
   const [selectedTemplate, setSelectedTemplate] = useState<string | null>(null);
   const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [paymentDialogOpen, setPaymentDialogOpen] = useState(false);
+  const { canCreatePresentation, incrementPresentationCount } = useSubscription();
+
   const [slides, setSlides] = useState<Array<{ title: string; content: string; image?: string }>>([
     {
       title: "Welcome to Your Presentation",
@@ -42,6 +46,11 @@ const PresentationEditor = () => {
   const handleGeneratePresentation = () => {
     if (!prompt.trim()) {
       toast.error("Please enter a topic or description for your presentation");
+      return;
+    }
+
+    if (!canCreatePresentation()) {
+      setPaymentDialogOpen(true);
       return;
     }
 
@@ -82,6 +91,9 @@ const PresentationEditor = () => {
       setLoading(false);
       setIncomingSlides(false);
       setCurrentSlide(0);
+      
+      incrementPresentationCount();
+      
       toast.success("Presentation generated successfully!");
     }, 2000);
   };
@@ -217,6 +229,11 @@ const PresentationEditor = () => {
         downloadUrl={downloadUrl}
         exportLoading={exportLoading}
         handleExportPowerPoint={handleExportPowerPoint}
+      />
+
+      <PaymentDialog 
+        open={paymentDialogOpen}
+        setOpen={setPaymentDialogOpen}
       />
     </div>
   );

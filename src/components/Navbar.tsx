@@ -4,7 +4,11 @@ import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { ChevronRight } from "lucide-react";
 
-const Navbar = () => {
+interface NavbarProps {
+  onPricingClick?: () => void;
+}
+
+const Navbar: React.FC<NavbarProps> = ({ onPricingClick }) => {
   const [scrolled, setScrolled] = useState(false);
 
   useEffect(() => {
@@ -44,17 +48,17 @@ const Navbar = () => {
           >
             Features
           </Link>
+          <button
+            onClick={onPricingClick}
+            className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+          >
+            Pricing
+          </button>
           <Link
             to="/templates"
             className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
           >
             Templates
-          </Link>
-          <Link
-            to="/pricing"
-            className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
-          >
-            Pricing
           </Link>
         </nav>
 
