@@ -12,12 +12,13 @@ const Create = () => {
   const { user } = useAuth();
 
   useEffect(() => {
-    // Check on component mount if the user can create a presentation
+    // Only check subscription status if the user is authenticated
+    // This prevents loops when not authenticated
     if (user && !canCreatePresentation()) {
       setPaymentDialogOpen(true);
       toast.info("You've used your free trial. Please subscribe for unlimited access.");
     }
-  }, [canCreatePresentation, user]);
+  }, [user, canCreatePresentation]);
 
   return (
     <>

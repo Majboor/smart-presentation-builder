@@ -1,9 +1,9 @@
-
 import React, { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
 import { generatePresentationMarkdown, generatePresentationJson, ensureHttps } from "@/services/presentationApi";
 import { useSubscription } from "@/hooks/useSubscription";
+import { useAuth } from "@/contexts/AuthContext";
 
 // Import our components
 import Header from "./editor/Header";
@@ -21,6 +21,7 @@ const templatePrompts = {
 
 const PresentationEditor = () => {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [loading, setLoading] = useState(false);
   const [prompt, setPrompt] = useState("");
   const [title, setTitle] = useState("Untitled Presentation");
@@ -46,10 +47,10 @@ const PresentationEditor = () => {
 
   // Check subscription status on mount
   useEffect(() => {
-    if (!canCreatePresentation()) {
+    if (user && !canCreatePresentation()) {
       setPaymentDialogOpen(true);
     }
-  }, [canCreatePresentation]);
+  }, [user, canCreatePresentation]);
 
   const handleGeneratePresentation = () => {
     if (!prompt.trim()) {
