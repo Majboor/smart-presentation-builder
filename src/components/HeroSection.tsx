@@ -1,7 +1,7 @@
 
 import React from "react";
 import { Button } from "@/components/ui/button";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { ChevronRight } from "lucide-react";
 import { useAuthCheck } from "@/hooks/useAuthCheck";
 import LoginPromptModal from "@/components/auth/LoginPromptModal";

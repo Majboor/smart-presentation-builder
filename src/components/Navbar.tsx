@@ -38,14 +38,17 @@ const Navbar: React.FC<NavbarProps> = ({ onPricingClick }) => {
     return () => window.removeEventListener("scroll", handleScroll);
   }, [scrolled]);
 
-  const handleSignOut = async (e: React.MouseEvent) => {
-    e.preventDefault();
-    await signOut();
+  const handleSignOut = () => {
+    signOut();
     navigate("/");
   };
 
-  const handlePricingClick = (e: React.MouseEvent) => {
+  const handleNavigation = (path: string) => (e: React.MouseEvent) => {
     e.preventDefault();
+    navigate(path);
+  };
+
+  const handlePricingClick = () => {
     if (onPricingClick) {
       onPricingClick();
     }
@@ -61,21 +64,23 @@ const Navbar: React.FC<NavbarProps> = ({ onPricingClick }) => {
     >
       <div className="max-w-7xl mx-auto flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <Link
-            to="/"
+          <button
+            onClick={handleNavigation("/")}
             className="text-2xl font-semibold tracking-tight slide-in-transition hover:opacity-80"
+            type="button"
           >
             Slide<span className="text-primary font-light">AI</span>
-          </Link>
+          </button>
         </div>
 
         <nav className="hidden md:flex items-center space-x-8">
-          <Link
-            to="/features"
+          <button
+            onClick={handleNavigation("/features")}
             className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+            type="button"
           >
             Features
-          </Link>
+          </button>
           <button
             onClick={handlePricingClick}
             className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
@@ -83,12 +88,13 @@ const Navbar: React.FC<NavbarProps> = ({ onPricingClick }) => {
           >
             Pricing
           </button>
-          <Link
-            to="/templates"
+          <button
+            onClick={handleNavigation("/templates")}
             className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+            type="button"
           >
             Templates
-          </Link>
+          </button>
         </nav>
 
         <div className="flex items-center gap-4">
@@ -123,47 +129,65 @@ const Navbar: React.FC<NavbarProps> = ({ onPricingClick }) => {
                     )}
                   </DropdownMenuLabel>
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem asChild>
-                    <Link to="/account" className="flex items-center gap-2 cursor-pointer w-full">
+                  <DropdownMenuItem>
+                    <button 
+                      onClick={handleNavigation("/account")} 
+                      className="flex items-center gap-2 cursor-pointer w-full"
+                      type="button"
+                    >
                       <Settings size={16} />
                       Account Settings
-                    </Link>
+                    </button>
                   </DropdownMenuItem>
-                  <DropdownMenuItem onClick={handleSignOut} className="gap-2 cursor-pointer">
-                    <LogOut size={16} />
-                    Sign out
+                  <DropdownMenuItem>
+                    <button
+                      onClick={handleSignOut}
+                      className="flex items-center gap-2 cursor-pointer w-full"
+                      type="button"
+                    >
+                      <LogOut size={16} />
+                      Sign out
+                    </button>
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
-              <Button asChild className={`group ${isPremium ? 'bg-gradient-to-r from-amber-500 to-amber-600' : ''}`} type="button">
-                <Link to="/create" className="flex items-center gap-1">
+              <Button 
+                className={`group ${isPremium ? 'bg-gradient-to-r from-amber-500 to-amber-600' : ''}`} 
+                type="button"
+                onClick={handleNavigation("/create")}
+              >
+                <span className="flex items-center gap-1">
                   {isPremium && <Crown size={16} className="text-amber-100" />}
                   Create presentation
                   <ChevronRight
                     size={16}
                     className="ml-1 transition-transform group-hover:translate-x-1"
                   />
-                </Link>
+                </span>
               </Button>
             </>
           ) : (
             <>
               <Button
-                asChild
                 variant="outline"
                 className="hidden md:flex hover:bg-secondary transition-all"
                 type="button"
+                onClick={handleNavigation("/auth")}
               >
-                <Link to="/auth">Log in</Link>
+                Log in
               </Button>
-              <Button asChild className="group" type="button">
-                <Link to="/auth?tab=signup" className="flex items-center gap-1">
+              <Button 
+                className="group" 
+                type="button"
+                onClick={handleNavigation("/auth?tab=signup")}
+              >
+                <span className="flex items-center gap-1">
                   Get started
                   <ChevronRight
                     size={16}
                     className="ml-1 transition-transform group-hover:translate-x-1"
                   />
-                </Link>
+                </span>
               </Button>
             </>
           )}
