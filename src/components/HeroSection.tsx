@@ -12,14 +12,18 @@ const HeroSection = () => {
 
   const handleCreateClick = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
-    if (checkAuth()) {
+    e.stopPropagation(); // Add this to prevent any bubbling
+    const canProceed = checkAuth();
+    if (canProceed) {
       navigate("/create");
     }
   };
 
   const handleTemplatesClick = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
-    if (checkAuth()) {
+    e.stopPropagation(); // Add this to prevent any bubbling
+    const canProceed = checkAuth();
+    if (canProceed) {
       navigate("/templates");
     }
   };
