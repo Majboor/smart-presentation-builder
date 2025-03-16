@@ -10,24 +10,14 @@ const HeroSection = () => {
   const navigate = useNavigate();
   const { checkAuth, showLoginPrompt, setShowLoginPrompt } = useAuthCheck();
 
-  const handleCreateClick = (e: React.MouseEvent<HTMLButtonElement>) => {
-    // Explicitly prevent default
-    e.preventDefault();
-    e.stopPropagation();
-    
+  const handleCreateClick = () => {
     if (checkAuth()) {
-      // Navigate directly without setTimeout
       navigate("/create");
     }
   };
 
-  const handleTemplatesClick = (e: React.MouseEvent<HTMLButtonElement>) => {
-    // Explicitly prevent default
-    e.preventDefault();
-    e.stopPropagation();
-    
+  const handleTemplatesClick = () => {
     if (checkAuth()) {
-      // Navigate directly without setTimeout
       navigate("/templates");
     }
   };
@@ -56,22 +46,20 @@ const HeroSection = () => {
             className="group"
             size="lg"
             onClick={handleCreateClick}
-            type="button" // Explicitly set button type
+            type="button"
           >
-            <span className="flex items-center gap-1">
-              Create your presentation
-              <ChevronRight
-                size={16}
-                className="ml-1 transition-transform group-hover:translate-x-1"
-              />
-            </span>
+            Create your presentation
+            <ChevronRight
+              size={16}
+              className="ml-1 transition-transform group-hover:translate-x-1"
+            />
           </Button>
           <Button
             className="hover:bg-secondary/80"
             variant="outline"
             size="lg"
             onClick={handleTemplatesClick}
-            type="button" // Explicitly set button type
+            type="button"
           >
             View templates
           </Button>
