@@ -48,7 +48,7 @@ export const useSubscription = () => {
         // Map the database fields to our Subscription interface
         setSubscription({
           id: data.id,
-          status: data.status,
+          status: data.status as SubscriptionStatus, // Cast to SubscriptionStatus type
           free_trial_used: data.free_trial_used,
           presentations_generated: data.presentations_generated,
           payment_reference: data.payment_reference,
@@ -98,7 +98,7 @@ export const useSubscription = () => {
         free_trial_used,
         // Ensure all other fields are preserved
         id: data.id,
-        status: data.status,
+        status: data.status as SubscriptionStatus, // Cast to SubscriptionStatus type
         payment_reference: data.payment_reference,
         is_active: data.is_active,
         amount: data.amount,
@@ -120,7 +120,7 @@ export const useSubscription = () => {
       const { data, error } = await supabase
         .from('subscriptions')
         .update({
-          status: 'paid'
+          status: 'paid' as SubscriptionStatus
         })
         .eq('user_id', user.id)
         .select()
