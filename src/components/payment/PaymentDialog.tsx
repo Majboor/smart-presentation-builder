@@ -1,13 +1,11 @@
 
-import React, { useState, useEffect } from "react";
-import { createPayment, verifyPayment } from "@/services/paymentService";
-import { useSubscription } from "@/hooks/useSubscription";
+import React, { useState } from "react";
+import { createPayment } from "@/services/paymentService";
 import { useAuth } from "@/contexts/AuthContext";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Loader2, CreditCard } from "lucide-react";
 import { toast } from "sonner";
-import { supabase } from "@/integrations/supabase/client";
 
 interface PaymentDialogProps {
   open: boolean;
@@ -16,51 +14,10 @@ interface PaymentDialogProps {
 
 const PaymentDialog: React.FC<PaymentDialogProps> = ({ open, setOpen }) => {
   const [loading, setLoading] = useState(false);
-  const { setPaidStatus } = useSubscription();
   const { user } = useAuth();
   
   // Set amount to exactly 5141 AED cents
   const SUBSCRIPTION_AMOUNT = 5141;
-  
-  // Check for payment verification on component mount
-  useEffect(() => {
-    const checkPayment = async () => {
-      if (!user) return;
-      
-      // Get URL parameters
-      const urlParams = new URLSearchParams(window.location.search);
-      const success = urlParams.get('success');
-      
-      // If success parameter exists, verify the payment
-      if (success) {
-        setLoading(true);
-        
-        try {
-          // For security, we would use the backend verification, but for now let's use the client-side check
-          const isSuccessful = await verifyPayment(urlParams);
-          
-          if (isSuccessful) {
-            await setPaidStatus();
-            toast.success("Payment successful! You now have unlimited access.");
-            
-            // Clean up the URL parameters
-            const cleanUrl = window.location.pathname;
-            window.history.replaceState({}, document.title, cleanUrl);
-          } else {
-            toast.error("Payment verification failed. Please try again or contact support.");
-          }
-        } catch (error) {
-          console.error("Payment verification error:", error);
-          toast.error("Error verifying payment. Please contact support.");
-        } finally {
-          setLoading(false);
-          setOpen(false);
-        }
-      }
-    };
-    
-    checkPayment();
-  }, [user]);
   
   const handlePayment = async () => {
     if (!user) {
@@ -71,8 +28,8 @@ const PaymentDialog: React.FC<PaymentDialogProps> = ({ open, setOpen }) => {
     try {
       setLoading(true);
       
-      // Create a redirect URL with the current origin
-      const redirectUrl = `${window.location.origin}${window.location.pathname}`;
+      // Create a redirect URL to the payment success page
+      const redirectUrl = `${window.location.origin}/payment-success`;
       
       const response = await createPayment(SUBSCRIPTION_AMOUNT, redirectUrl);
       

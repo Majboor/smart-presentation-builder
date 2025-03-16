@@ -66,12 +66,23 @@ export const verifyPayment = async (urlParams: URLSearchParams): Promise<boolean
     const success = urlParams.get('success') === 'true';
     const txnResponseCode = urlParams.get('txn_response_code');
     const message = urlParams.get('data.message');
+    const reference = urlParams.get('merchant_order_id');
+    
+    console.log('Verifying payment with params:', {
+      success,
+      txnResponseCode,
+      message,
+      reference
+    });
     
     // Check basic payment parameters
     if (success && txnResponseCode === 'APPROVED' && message === 'Approved') {
+      // Log the successful verification
+      console.log('Payment verification successful');
       return true;
     }
     
+    console.log('Payment verification failed with params:', urlParams);
     return false;
   } catch (error) {
     console.error('Error verifying payment:', error);

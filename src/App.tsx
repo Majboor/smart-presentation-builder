@@ -11,6 +11,7 @@ import Account from "./pages/Account";
 import NotFound from "./pages/NotFound";
 import PresentationViewer from "./components/presentation/PresentationViewer";
 import { AuthProvider } from "./contexts/AuthContext";
+import PaymentSuccess from "./pages/PaymentSuccess";
 
 const queryClient = new QueryClient();
 
@@ -58,6 +59,14 @@ const App = () => (
               element={
                 <ProtectedRoute>
                   <PresentationViewer />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/payment-success" 
+              element={
+                <ProtectedRoute>
+                  <PaymentSuccess />
                 </ProtectedRoute>
               } 
             />
