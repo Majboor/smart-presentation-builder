@@ -1,10 +1,22 @@
 
 import React from "react";
 import { Button } from "@/components/ui/button";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { ChevronRight } from "lucide-react";
+import { useAuthCheck } from "@/hooks/useAuthCheck";
+import LoginPromptModal from "@/components/auth/LoginPromptModal";
 
 const HeroSection = () => {
+  const navigate = useNavigate();
+  const { checkAuth, showLoginPrompt, setShowLoginPrompt } = useAuthCheck();
+
+  const handleCreateClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    if (checkAuth()) {
+      navigate("/create");
+    }
+  };
+
   return (
     <section className="relative min-h-screen flex flex-col items-center justify-center px-6 py-32 md:py-40 overflow-hidden">
       {/* Background gradient element */}
@@ -25,22 +37,27 @@ const HeroSection = () => {
           No design skills required.
         </p>
         <div className="flex flex-col sm:flex-row gap-4 justify-center pt-4">
-          <Button asChild size="lg" className="group">
-            <Link to="/create" className="flex items-center gap-1">
+          <Button onClick={handleCreateClick} size="lg" className="group">
+            <span className="flex items-center gap-1">
               Create your presentation
               <ChevronRight
                 size={16}
                 className="ml-1 transition-transform group-hover:translate-x-1"
               />
-            </Link>
+            </span>
           </Button>
           <Button
-            asChild
+            onClick={(e) => {
+              e.preventDefault();
+              if (checkAuth()) {
+                navigate("/templates");
+              }
+            }}
             size="lg"
             variant="outline"
             className="hover:bg-secondary/80"
           >
-            <Link to="/templates">View templates</Link>
+            View templates
           </Button>
         </div>
       </div>
@@ -54,6 +71,12 @@ const HeroSection = () => {
           </div>
         </div>
       </div>
+
+      {/* Login Prompt Modal */}
+      <LoginPromptModal 
+        open={showLoginPrompt} 
+        setOpen={setShowLoginPrompt} 
+      />
     </section>
   );
 };

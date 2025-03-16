@@ -3,6 +3,8 @@ import React from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Sparkles, Download, Loader2 } from "lucide-react";
+import { useAuthCheck } from "@/hooks/useAuthCheck";
+import LoginPromptModal from "@/components/auth/LoginPromptModal";
 
 interface SidebarGenerateProps {
   prompt: string;
@@ -25,6 +27,20 @@ const SidebarGenerate: React.FC<SidebarGenerateProps> = ({
   handleTemplateSelect,
   templatePrompts,
 }) => {
+  const { checkAuth, showLoginPrompt, setShowLoginPrompt } = useAuthCheck();
+
+  const handleGenerate = () => {
+    if (checkAuth()) {
+      handleGeneratePresentation();
+    }
+  };
+
+  const handleExport = () => {
+    if (checkAuth()) {
+      setExportDialogOpen(true);
+    }
+  };
+
   return (
     <div className="space-y-4">
       <div className="space-y-2">
@@ -47,7 +63,7 @@ const SidebarGenerate: React.FC<SidebarGenerateProps> = ({
       
       <div className="flex gap-2">
         <Button
-          onClick={handleGeneratePresentation}
+          onClick={handleGenerate}
           className="flex-1 gap-1"
           disabled={loading}
         >
@@ -66,7 +82,7 @@ const SidebarGenerate: React.FC<SidebarGenerateProps> = ({
         
         <Button 
           variant="outline" 
-          onClick={() => setExportDialogOpen(true)}
+          onClick={handleExport}
           className="gap-1"
         >
           <Download size={16} />
@@ -83,13 +99,23 @@ const SidebarGenerate: React.FC<SidebarGenerateProps> = ({
               variant={selectedTemplate === template ? "default" : "outline"}
               size="sm"
               className="h-auto py-2 justify-start"
-              onClick={() => handleTemplateSelect(template)}
+              onClick={() => {
+                if (checkAuth()) {
+                  handleTemplateSelect(template);
+                }
+              }}
             >
               {template}
             </Button>
           ))}
         </div>
       </div>
+
+      {/* Login Prompt Modal */}
+      <LoginPromptModal 
+        open={showLoginPrompt} 
+        setOpen={setShowLoginPrompt} 
+      />
     </div>
   );
 };
