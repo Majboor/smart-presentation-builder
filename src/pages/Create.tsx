@@ -10,20 +10,31 @@ const Create = () => {
   const [paymentDialogOpen, setPaymentDialogOpen] = useState(false);
   const { subscription, canCreatePresentation } = useSubscription();
   const { user } = useAuth();
+  const [hasDisplayedPaymentPrompt, setHasDisplayedPaymentPrompt] = useState(false);
 
   useEffect(() => {
     // Only check subscription status if the user is authenticated
-    // This prevents loops when not authenticated
-    if (user && !canCreatePresentation()) {
+    // And we haven't already shown the payment dialog
+    if (user && subscription && !canCreatePresentation() && !hasDisplayedPaymentPrompt) {
       setPaymentDialogOpen(true);
+      setHasDisplayedPaymentPrompt(true);
       toast.info("You've used your free trial. Please subscribe for unlimited access.");
     }
-  }, [user, canCreatePresentation]);
+  }, [user, subscription, canCreatePresentation, hasDisplayedPaymentPrompt]);
 
   return (
     <>
       <PresentationEditor />
-      <PaymentDialog open={paymentDialogOpen} setOpen={setPaymentDialogOpen} />
+      <PaymentDialog 
+        open={paymentDialogOpen} 
+        setOpen={(open) => {
+          setPaymentDialogOpen(open);
+          // If dialog is closed, don't immediately reopen it
+          if (!open) {
+            setHasDisplayedPaymentPrompt(true);
+          }
+        }} 
+      />
     </>
   );
 };

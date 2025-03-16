@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
@@ -24,6 +24,8 @@ export const useSubscription = () => {
   const { user, session } = useAuth();
   const [subscription, setSubscription] = useState<Subscription | null>(null);
   const [loading, setLoading] = useState(true);
+  const errorShown = useRef(false);
+  const fetchAttempted = useRef(false);
 
   useEffect(() => {
     const fetchSubscription = async () => {
@@ -33,6 +35,9 @@ export const useSubscription = () => {
         setLoading(false);
         return;
       }
+
+      // Skip if we've already shown an error for this session
+      if (errorShown.current) return;
 
       try {
         // First, check if a subscription exists for this user
@@ -97,15 +102,52 @@ export const useSubscription = () => {
             user_id: newSub.user_id
           });
         }
+        
+        fetchAttempted.current = true;
       } catch (error: any) {
         console.error('Error fetching subscription:', error);
-        toast.error(`Error loading subscription: ${error.message}`);
+        
+        // Only show the error toast once
+        if (!errorShown.current) {
+          toast.error(`Error loading subscription: ${error.message}`);
+          errorShown.current = true;
+        }
+        
+        // When there's a network error, set a default subscription for better UX
+        if (!subscription && fetchAttempted.current === false) {
+          // Create a fallback subscription that allows one free trial
+          const fallbackSubscription: Subscription = {
+            id: 'fallback',
+            status: 'free',
+            free_trial_used: false,
+            presentations_generated: 0,
+            is_active: true,
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString(),
+            user_id: user.id
+          };
+          setSubscription(fallbackSubscription);
+          fetchAttempted.current = true;
+        }
       } finally {
         setLoading(false);
       }
     };
 
+    // Reset error reference when user changes
+    if (user) {
+      errorShown.current = false;
+    }
+    
     fetchSubscription();
+  }, [user]);
+
+  // Reset error flag when user changes
+  useEffect(() => {
+    if (user) {
+      errorShown.current = false;
+      fetchAttempted.current = false;
+    }
   }, [user]);
 
   const incrementPresentationCount = async () => {
@@ -115,6 +157,13 @@ export const useSubscription = () => {
       const newCount = subscription.presentations_generated + 1;
       // Only mark free trial as used if this is their first presentation
       const free_trial_used = newCount > 0;
+      
+      // Update local state immediately for better UX
+      setSubscription({
+        ...subscription,
+        presentations_generated: newCount,
+        free_trial_used
+      });
       
       const { data, error } = await supabase
         .from('subscriptions')
@@ -127,28 +176,23 @@ export const useSubscription = () => {
         .single();
 
       if (error) {
-        throw error;
+        console.error('Error updating presentation count:', error);
+        // Don't show toast error here as it's not critical
+        return;
       }
 
-      // Update the local subscription object with the new data
-      setSubscription({
-        ...subscription,
-        presentations_generated: newCount,
-        free_trial_used,
-        // Ensure all other fields are preserved
-        id: data.id,
-        status: data.status as SubscriptionStatus, // Cast to SubscriptionStatus type
-        payment_reference: data.payment_reference,
-        is_active: data.is_active,
-        amount: data.amount,
-        created_at: data.created_at,
-        updated_at: data.updated_at,
-        expires_at: data.expires_at,
-        user_id: data.user_id
-      });
+      // Update the subscription object with server data
+      if (data) {
+        setSubscription({
+          ...subscription,
+          presentations_generated: data.presentations_generated,
+          free_trial_used: data.free_trial_used,
+          updated_at: data.updated_at
+        });
+      }
     } catch (error: any) {
       console.error('Error updating presentation count:', error);
-      toast.error(`Error updating presentation count: ${error.message}`);
+      // Don't show toast for this error as it's not critical to user experience
     }
   };
 
