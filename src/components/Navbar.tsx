@@ -38,20 +38,16 @@ const Navbar: React.FC<NavbarProps> = ({ onPricingClick }) => {
     return () => window.removeEventListener("scroll", handleScroll);
   }, [scrolled]);
 
-  const handleSignOut = (e: React.MouseEvent) => {
-    e.preventDefault();
+  const handleSignOut = () => {
     signOut();
     navigate("/");
   };
 
-  const handleNavigation = (path: string) => (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
+  const handleNavigation = (path: string) => () => {
     navigate(path);
   };
 
-  const handlePricingClick = (e: React.MouseEvent) => {
-    e.preventDefault();
+  const handlePricingClick = () => {
     if (onPricingClick) {
       onPricingClick();
     }

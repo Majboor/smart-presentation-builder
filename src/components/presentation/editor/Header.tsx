@@ -26,8 +26,7 @@ const Header: React.FC<HeaderProps> = ({
 }) => {
   const navigate = useNavigate();
 
-  const handleHomeClick = (e: React.MouseEvent) => {
-    e.preventDefault();
+  const handleHomeClick = () => {
     navigate("/");
   };
 
