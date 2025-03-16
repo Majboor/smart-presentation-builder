@@ -72,35 +72,75 @@ export const useSubscription = () => {
           });
         } else {
           // If no subscription exists, create a default one for this user
-          const { data: newSub, error: createError } = await supabase
+          // Check AGAIN to make sure a subscription wasn't created in the meantime (race condition fix)
+          const { count: subscriptionCount, error: countError } = await supabase
             .from('subscriptions')
-            .insert({
-              user_id: user.id,
-              status: 'free',
-              free_trial_used: false,
-              presentations_generated: 0,
-              is_active: true
-            })
-            .select()
-            .single();
-
-          if (createError) {
-            throw createError;
+            .select('*', { count: 'exact', head: true })
+            .eq('user_id', user.id);
+            
+          if (countError) {
+            throw countError;
           }
+          
+          // Only create a new subscription if there are no existing subscriptions for this user
+          if (subscriptionCount === 0) {
+            const { data: newSub, error: createError } = await supabase
+              .from('subscriptions')
+              .insert({
+                user_id: user.id,
+                status: 'free',
+                free_trial_used: false,
+                presentations_generated: 0,
+                is_active: true
+              })
+              .select()
+              .single();
 
-          setSubscription({
-            id: newSub.id,
-            status: newSub.status as SubscriptionStatus,
-            free_trial_used: newSub.free_trial_used,
-            presentations_generated: newSub.presentations_generated,
-            payment_reference: newSub.payment_reference,
-            is_active: newSub.is_active,
-            amount: newSub.amount,
-            created_at: newSub.created_at,
-            updated_at: newSub.updated_at,
-            expires_at: newSub.expires_at,
-            user_id: newSub.user_id
-          });
+            if (createError) {
+              throw createError;
+            }
+
+            setSubscription({
+              id: newSub.id,
+              status: newSub.status as SubscriptionStatus,
+              free_trial_used: newSub.free_trial_used,
+              presentations_generated: newSub.presentations_generated,
+              payment_reference: newSub.payment_reference,
+              is_active: newSub.is_active,
+              amount: newSub.amount,
+              created_at: newSub.created_at,
+              updated_at: newSub.updated_at,
+              expires_at: newSub.expires_at,
+              user_id: newSub.user_id
+            });
+          } else {
+            // If we found subscriptions in the second check (race condition), fetch them again
+            const { data: existingSubs, error: fetchError } = await supabase
+              .from('subscriptions')
+              .select('*')
+              .eq('user_id', user.id);
+              
+            if (fetchError) {
+              throw fetchError;
+            }
+            
+            if (existingSubs && existingSubs.length > 0) {
+              const sub = existingSubs[0];
+              setSubscription({
+                id: sub.id,
+                status: sub.status as SubscriptionStatus,
+                free_trial_used: sub.free_trial_used,
+                presentations_generated: sub.presentations_generated,
+                payment_reference: sub.payment_reference,
+                is_active: sub.is_active,
+                amount: sub.amount,
+                created_at: sub.created_at,
+                updated_at: sub.updated_at,
+                expires_at: sub.expires_at,
+                user_id: sub.user_id
+              });
+            }
+          }
         }
         
         fetchAttempted.current = true;
