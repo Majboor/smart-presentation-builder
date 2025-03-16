@@ -10,10 +10,17 @@ const HeroSection = () => {
   const navigate = useNavigate();
   const { checkAuth, showLoginPrompt, setShowLoginPrompt } = useAuthCheck();
 
-  const handleCreateClick = (e: React.MouseEvent) => {
+  const handleCreateClick = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
     if (checkAuth()) {
       navigate("/create");
+    }
+  };
+
+  const handleTemplatesClick = (e: React.MouseEvent<HTMLButtonElement>) => {
+    e.preventDefault();
+    if (checkAuth()) {
+      navigate("/templates");
     }
   };
 
@@ -37,7 +44,12 @@ const HeroSection = () => {
           No design skills required.
         </p>
         <div className="flex flex-col sm:flex-row gap-4 justify-center pt-4">
-          <Button onClick={handleCreateClick} size="lg" className="group">
+          <Button 
+            type="button" 
+            onClick={handleCreateClick} 
+            size="lg" 
+            className="group"
+          >
             <span className="flex items-center gap-1">
               Create your presentation
               <ChevronRight
@@ -47,12 +59,8 @@ const HeroSection = () => {
             </span>
           </Button>
           <Button
-            onClick={(e) => {
-              e.preventDefault();
-              if (checkAuth()) {
-                navigate("/templates");
-              }
-            }}
+            type="button"
+            onClick={handleTemplatesClick}
             size="lg"
             variant="outline"
             className="hover:bg-secondary/80"
