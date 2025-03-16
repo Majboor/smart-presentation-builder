@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Sparkles, Download, Loader2 } from "lucide-react";
 import { useAuthCheck } from "@/hooks/useAuthCheck";
+import { useSubscription } from "@/hooks/useSubscription";
 import LoginPromptModal from "@/components/auth/LoginPromptModal";
 
 interface SidebarGenerateProps {
@@ -28,9 +29,14 @@ const SidebarGenerate: React.FC<SidebarGenerateProps> = ({
   templatePrompts,
 }) => {
   const { checkAuth, showLoginPrompt, setShowLoginPrompt } = useAuthCheck();
+  const { canCreatePresentation } = useSubscription();
 
   const handleGenerate = () => {
     if (checkAuth()) {
+      if (!canCreatePresentation()) {
+        // If can't create presentation, don't proceed with generation
+        return;
+      }
       handleGeneratePresentation();
     }
   };
@@ -40,6 +46,9 @@ const SidebarGenerate: React.FC<SidebarGenerateProps> = ({
       setExportDialogOpen(true);
     }
   };
+
+  // Determine if the generate button should be disabled
+  const isGenerateDisabled = loading || !canCreatePresentation();
 
   return (
     <div className="space-y-4">
@@ -65,7 +74,8 @@ const SidebarGenerate: React.FC<SidebarGenerateProps> = ({
         <Button
           onClick={handleGenerate}
           className="flex-1 gap-1"
-          disabled={loading}
+          disabled={isGenerateDisabled}
+          title={!canCreatePresentation() ? "Free trial used. Please subscribe." : ""}
         >
           {loading ? (
             <>
@@ -99,8 +109,13 @@ const SidebarGenerate: React.FC<SidebarGenerateProps> = ({
               variant={selectedTemplate === template ? "default" : "outline"}
               size="sm"
               className="h-auto py-2 justify-start"
+              disabled={!canCreatePresentation()}
               onClick={() => {
                 if (checkAuth()) {
+                  if (!canCreatePresentation()) {
+                    // If can't create presentation, don't proceed with template selection
+                    return;
+                  }
                   handleTemplateSelect(template);
                 }
               }}
