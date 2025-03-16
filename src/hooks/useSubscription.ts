@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
@@ -30,17 +29,14 @@ export const useSubscription = () => {
   useEffect(() => {
     const fetchSubscription = async () => {
       if (!user) {
-        // If no user is logged in, reset subscription to null and return
         setSubscription(null);
         setLoading(false);
         return;
       }
 
-      // Skip if we've already shown an error for this session
       if (errorShown.current) return;
 
       try {
-        // First, check if a subscription exists for this user
         const { data, error } = await supabase
           .from('subscriptions')
           .select('*')
@@ -51,12 +47,10 @@ export const useSubscription = () => {
         }
 
         if (data && data.length > 0) {
-          // Use the most recent subscription if multiple exist
           const mostRecentSub = data.sort((a, b) => 
             new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
           )[0];
 
-          // Map the database fields to our Subscription interface
           setSubscription({
             id: mostRecentSub.id,
             status: mostRecentSub.status as SubscriptionStatus,
@@ -71,8 +65,6 @@ export const useSubscription = () => {
             user_id: mostRecentSub.user_id
           });
         } else {
-          // If no subscription exists, create a default one for this user
-          // Check AGAIN to make sure a subscription wasn't created in the meantime (race condition fix)
           const { count: subscriptionCount, error: countError } = await supabase
             .from('subscriptions')
             .select('*', { count: 'exact', head: true })
@@ -82,7 +74,6 @@ export const useSubscription = () => {
             throw countError;
           }
           
-          // Only create a new subscription if there are no existing subscriptions for this user
           if (subscriptionCount === 0) {
             const { data: newSub, error: createError } = await supabase
               .from('subscriptions')
@@ -114,7 +105,6 @@ export const useSubscription = () => {
               user_id: newSub.user_id
             });
           } else {
-            // If we found subscriptions in the second check (race condition), fetch them again
             const { data: existingSubs, error: fetchError } = await supabase
               .from('subscriptions')
               .select('*')
@@ -147,15 +137,12 @@ export const useSubscription = () => {
       } catch (error: any) {
         console.error('Error fetching subscription:', error);
         
-        // Only show the error toast once
         if (!errorShown.current) {
           toast.error(`Error loading subscription: ${error.message}`);
           errorShown.current = true;
         }
         
-        // When there's a network error, set a default subscription for better UX
         if (!subscription && fetchAttempted.current === false) {
-          // Create a fallback subscription that allows one free trial
           const fallbackSubscription: Subscription = {
             id: 'fallback',
             status: 'free',
@@ -174,7 +161,6 @@ export const useSubscription = () => {
       }
     };
 
-    // Reset error reference when user changes
     if (user) {
       errorShown.current = false;
     }
@@ -182,7 +168,6 @@ export const useSubscription = () => {
     fetchSubscription();
   }, [user]);
 
-  // Reset error flag when user changes
   useEffect(() => {
     if (user) {
       errorShown.current = false;
@@ -195,11 +180,8 @@ export const useSubscription = () => {
 
     try {
       const newCount = subscription.presentations_generated + 1;
-      // Only mark free trial as used when they've completed their first presentation
-      // This means their second attempt would require payment
       const free_trial_used = newCount >= 1;
       
-      // Update local state immediately for better UX
       setSubscription({
         ...subscription,
         presentations_generated: newCount,
@@ -218,11 +200,9 @@ export const useSubscription = () => {
 
       if (error) {
         console.error('Error updating presentation count:', error);
-        // Don't show toast error here as it's not critical
         return;
       }
 
-      // Update the subscription object with server data
       if (data) {
         setSubscription({
           ...subscription,
@@ -233,7 +213,6 @@ export const useSubscription = () => {
       }
     } catch (error: any) {
       console.error('Error updating presentation count:', error);
-      // Don't show toast for this error as it's not critical to user experience
     }
   };
 
@@ -254,11 +233,9 @@ export const useSubscription = () => {
         throw error;
       }
 
-      // Update the local subscription object with the new data
       setSubscription({
         ...subscription,
         status: 'paid',
-        // Ensure all other fields are preserved
         id: data.id,
         free_trial_used: data.free_trial_used,
         presentations_generated: data.presentations_generated,
@@ -280,9 +257,6 @@ export const useSubscription = () => {
   const canCreatePresentation = (): boolean => {
     if (!subscription) return false;
     
-    // User can create a presentation if:
-    // 1. They are on a paid plan, OR
-    // 2. They haven't used their free trial yet (presentations_generated is 0)
     return subscription.status === 'paid' || subscription.presentations_generated === 0;
   };
 

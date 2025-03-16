@@ -33,7 +33,9 @@ const SidebarGenerate: React.FC<SidebarGenerateProps> = ({
 
   const handleGenerate = () => {
     if (checkAuth()) {
-      // Allow generating if it's their first presentation OR they're paid
+      // Allow generating if:
+      // 1. It's their first presentation (presentations_generated === 0), OR
+      // 2. They're on a paid plan (status === 'paid')
       handleGeneratePresentation();
     }
   };
@@ -44,9 +46,19 @@ const SidebarGenerate: React.FC<SidebarGenerateProps> = ({
     }
   };
 
-  // Determine if the generate button should be disabled
-  // Only disable if they've already used their free trial AND are not on a paid plan
-  const isGenerateDisabled = loading || (subscription && subscription.presentations_generated > 0 && !canCreatePresentation());
+  // Only disable the generate button if:
+  // 1. It's currently loading, OR
+  // 2. They've already used their free trial AND are not on a paid plan
+  const isGenerateDisabled = loading || (
+    subscription && 
+    subscription.presentations_generated > 0 && 
+    !canCreatePresentation()
+  );
+
+  // Generate a helpful tooltip message based on subscription status
+  const generateButtonTooltip = isGenerateDisabled && !loading 
+    ? "Free trial used. Please subscribe for unlimited access."
+    : "";
 
   return (
     <div className="space-y-4">
@@ -73,7 +85,7 @@ const SidebarGenerate: React.FC<SidebarGenerateProps> = ({
           onClick={handleGenerate}
           className="flex-1 gap-1"
           disabled={isGenerateDisabled}
-          title={isGenerateDisabled ? "Free trial used. Please subscribe." : ""}
+          title={generateButtonTooltip}
         >
           {loading ? (
             <>

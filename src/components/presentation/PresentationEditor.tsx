@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
@@ -37,6 +36,7 @@ const PresentationEditor = () => {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [paymentDialogOpen, setPaymentDialogOpen] = useState(false);
   const { canCreatePresentation, incrementPresentationCount, subscription } = useSubscription();
+  const [hasShownPaymentPrompt, setHasShownPaymentPrompt] = useState(false);
 
   const [slides, setSlides] = useState<Array<{ title: string; content: string; image?: string }>>([
     {
@@ -46,24 +46,21 @@ const PresentationEditor = () => {
     },
   ]);
 
-  // Only check subscription on mount once, and only show payment dialog if they've
-  // already used their free trial (presentations_generated > 0)
-  useEffect(() => {
-    if (user && subscription && subscription.presentations_generated > 0 && !canCreatePresentation()) {
-      setPaymentDialogOpen(true);
-    }
-  }, [user, subscription, canCreatePresentation]);
-
   const handleGeneratePresentation = () => {
     if (!prompt.trim()) {
       toast.error("Please enter a topic or description for your presentation");
       return;
     }
 
-    // Only block generation and show payment dialog if they've already used their free trial
-    if (subscription && subscription.presentations_generated > 0 && !canCreatePresentation()) {
+    if (subscription && 
+        subscription.presentations_generated > 0 && 
+        !canCreatePresentation() && 
+        !hasShownPaymentPrompt) {
       setPaymentDialogOpen(true);
-      toast.info("You've used your free trial. Please subscribe for unlimited access.");
+      setHasShownPaymentPrompt(true);
+      toast.info("You've used your free trial. Please subscribe for unlimited access.", {
+        id: "free-trial-used-toast",
+      });
       return;
     }
 
@@ -246,7 +243,12 @@ const PresentationEditor = () => {
 
       <PaymentDialog 
         open={paymentDialogOpen}
-        setOpen={setPaymentDialogOpen}
+        setOpen={(open) => {
+          setPaymentDialogOpen(open);
+          if (!open) {
+            setHasShownPaymentPrompt(true);
+          }
+        }}
       />
     </div>
   );
