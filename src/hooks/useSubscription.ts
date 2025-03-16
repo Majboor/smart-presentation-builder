@@ -35,30 +35,68 @@ export const useSubscription = () => {
       }
 
       try {
+        // First, check if a subscription exists for this user
         const { data, error } = await supabase
           .from('subscriptions')
           .select('*')
-          .eq('user_id', user.id)
-          .single();
+          .eq('user_id', user.id);
 
         if (error) {
           throw error;
         }
 
-        // Map the database fields to our Subscription interface
-        setSubscription({
-          id: data.id,
-          status: data.status as SubscriptionStatus, // Cast to SubscriptionStatus type
-          free_trial_used: data.free_trial_used,
-          presentations_generated: data.presentations_generated,
-          payment_reference: data.payment_reference,
-          is_active: data.is_active,
-          amount: data.amount,
-          created_at: data.created_at,
-          updated_at: data.updated_at,
-          expires_at: data.expires_at,
-          user_id: data.user_id
-        });
+        if (data && data.length > 0) {
+          // Use the most recent subscription if multiple exist
+          const mostRecentSub = data.sort((a, b) => 
+            new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+          )[0];
+
+          // Map the database fields to our Subscription interface
+          setSubscription({
+            id: mostRecentSub.id,
+            status: mostRecentSub.status as SubscriptionStatus, // Cast to SubscriptionStatus type
+            free_trial_used: mostRecentSub.free_trial_used,
+            presentations_generated: mostRecentSub.presentations_generated,
+            payment_reference: mostRecentSub.payment_reference,
+            is_active: mostRecentSub.is_active,
+            amount: mostRecentSub.amount,
+            created_at: mostRecentSub.created_at,
+            updated_at: mostRecentSub.updated_at,
+            expires_at: mostRecentSub.expires_at,
+            user_id: mostRecentSub.user_id
+          });
+        } else {
+          // If no subscription exists, create a default one for this user
+          const { data: newSub, error: createError } = await supabase
+            .from('subscriptions')
+            .insert({
+              user_id: user.id,
+              status: 'free',
+              free_trial_used: false,
+              presentations_generated: 0,
+              is_active: true
+            })
+            .select()
+            .single();
+
+          if (createError) {
+            throw createError;
+          }
+
+          setSubscription({
+            id: newSub.id,
+            status: newSub.status as SubscriptionStatus,
+            free_trial_used: newSub.free_trial_used,
+            presentations_generated: newSub.presentations_generated,
+            payment_reference: newSub.payment_reference,
+            is_active: newSub.is_active,
+            amount: newSub.amount,
+            created_at: newSub.created_at,
+            updated_at: newSub.updated_at,
+            expires_at: newSub.expires_at,
+            user_id: newSub.user_id
+          });
+        }
       } catch (error: any) {
         console.error('Error fetching subscription:', error);
         toast.error(`Error loading subscription: ${error.message}`);
