@@ -6,10 +6,13 @@ import FeaturesSection from "@/components/FeaturesSection";
 import PricingSection from "@/components/PricingSection";
 import Footer from "@/components/Footer";
 import PaymentDialog from "@/components/payment/PaymentDialog";
+import { useSubscription } from "@/hooks/useSubscription";
 
 const Index = () => {
   const [paymentDialogOpen, setPaymentDialogOpen] = useState(false);
   const pricingRef = useRef<HTMLDivElement>(null);
+  const { subscription } = useSubscription();
+  const isPremium = subscription?.status === 'paid';
 
   const handleSubscribe = () => {
     setPaymentDialogOpen(true);
@@ -26,7 +29,7 @@ const Index = () => {
         <HeroSection />
         <FeaturesSection />
         <div ref={pricingRef}>
-          <PricingSection onSubscribe={handleSubscribe} />
+          <PricingSection onSubscribe={handleSubscribe} isPremium={isPremium} />
         </div>
       </main>
       <Footer />
