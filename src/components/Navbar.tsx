@@ -38,9 +38,17 @@ const Navbar: React.FC<NavbarProps> = ({ onPricingClick }) => {
     return () => window.removeEventListener("scroll", handleScroll);
   }, [scrolled]);
 
-  const handleSignOut = async () => {
+  const handleSignOut = async (e: React.MouseEvent) => {
+    e.preventDefault();
     await signOut();
     navigate("/");
+  };
+
+  const handlePricingClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    if (onPricingClick) {
+      onPricingClick();
+    }
   };
 
   return (
@@ -69,8 +77,9 @@ const Navbar: React.FC<NavbarProps> = ({ onPricingClick }) => {
             Features
           </Link>
           <button
-            onClick={onPricingClick}
+            onClick={handlePricingClick}
             className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+            type="button"
           >
             Pricing
           </button>
@@ -87,7 +96,7 @@ const Navbar: React.FC<NavbarProps> = ({ onPricingClick }) => {
             <>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="outline" className="gap-2">
+                  <Button variant="outline" className="gap-2" type="button">
                     <User size={16} />
                     <span className="hidden md:inline">Account</span>
                     {isPremium && (
@@ -115,7 +124,7 @@ const Navbar: React.FC<NavbarProps> = ({ onPricingClick }) => {
                   </DropdownMenuLabel>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem asChild>
-                    <Link to="/account" className="flex items-center gap-2 cursor-pointer">
+                    <Link to="/account" className="flex items-center gap-2 cursor-pointer w-full">
                       <Settings size={16} />
                       Account Settings
                     </Link>
@@ -126,7 +135,7 @@ const Navbar: React.FC<NavbarProps> = ({ onPricingClick }) => {
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
-              <Button asChild className={`group ${isPremium ? 'bg-gradient-to-r from-amber-500 to-amber-600' : ''}`}>
+              <Button asChild className={`group ${isPremium ? 'bg-gradient-to-r from-amber-500 to-amber-600' : ''}`} type="button">
                 <Link to="/create" className="flex items-center gap-1">
                   {isPremium && <Crown size={16} className="text-amber-100" />}
                   Create presentation
@@ -143,10 +152,11 @@ const Navbar: React.FC<NavbarProps> = ({ onPricingClick }) => {
                 asChild
                 variant="outline"
                 className="hidden md:flex hover:bg-secondary transition-all"
+                type="button"
               >
                 <Link to="/auth">Log in</Link>
               </Button>
-              <Button asChild className="group">
+              <Button asChild className="group" type="button">
                 <Link to="/auth?tab=signup" className="flex items-center gap-1">
                   Get started
                   <ChevronRight
