@@ -22,7 +22,8 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const hasSession = !!sessionStr;
 
   if (!hasSession) {
-    return <Navigate to="/auth" replace />;
+    // Instead of redirecting to /auth, return the Navigate component
+    return <Navigate to="/auth" />;
   }
 
   return <>{children}</>;

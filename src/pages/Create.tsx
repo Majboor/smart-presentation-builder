@@ -10,26 +10,27 @@ import { toast } from "sonner";
 const Create = () => {
   const [paymentDialogOpen, setPaymentDialogOpen] = useState(false);
   const { subscription, canCreatePresentation } = useSubscription();
-  const { user } = useAuth();
+  const { user, loading } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Redirect if not authenticated
-    if (!user) {
+    // Only redirect if we're sure the user is not authenticated (after loading)
+    if (!loading && !user) {
       toast.error("Please log in to create presentations");
       navigate("/auth");
       return;
     }
 
     // Check on component mount if the user can create a presentation
-    if (!canCreatePresentation()) {
+    // Only after we're sure they're authenticated
+    if (!loading && user && !canCreatePresentation()) {
       setPaymentDialogOpen(true);
       toast.info("You've used your free trial. Please subscribe for unlimited access.");
     }
-  }, [canCreatePresentation, user, navigate]);
+  }, [canCreatePresentation, user, navigate, loading]);
 
-  // Return null during redirect to prevent rendering the editor
-  if (!user) {
+  // Return null during authentication loading or redirect
+  if (loading || !user) {
     return null;
   }
 
