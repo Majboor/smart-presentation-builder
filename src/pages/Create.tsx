@@ -13,8 +13,8 @@ const Create = () => {
   const [hasDisplayedPaymentPrompt, setHasDisplayedPaymentPrompt] = useState(false);
 
   useEffect(() => {
-    // Only check subscription status and show dialog ONCE if:
-    // 1. The user is authenticated
+    // Only check subscription status and show dialog if:
+    // 1. User is authenticated
     // 2. We have subscription data
     // 3. They've already used their free trial (presentations_generated > 0)
     // 4. They can't create a presentation (not on paid plan)
@@ -26,8 +26,9 @@ const Create = () => {
       !canCreatePresentation() && 
       !hasDisplayedPaymentPrompt
     ) {
-      setPaymentDialogOpen(true);
+      // Set this first to prevent multiple dialogs
       setHasDisplayedPaymentPrompt(true);
+      setPaymentDialogOpen(true);
       
       // Only show this toast once
       toast.info("You've used your free trial. Please subscribe for unlimited access.", {

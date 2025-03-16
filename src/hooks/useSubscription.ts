@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
@@ -25,6 +26,7 @@ export const useSubscription = () => {
   const [loading, setLoading] = useState(true);
   const errorShown = useRef(false);
   const fetchAttempted = useRef(false);
+  const isCreatingSubscription = useRef(false);
 
   useEffect(() => {
     const fetchSubscription = async () => {
@@ -37,17 +39,19 @@ export const useSubscription = () => {
       if (errorShown.current) return;
 
       try {
-        const { data, error } = await supabase
+        // First, check if a subscription already exists for this user
+        const { data: existingData, error: existingError } = await supabase
           .from('subscriptions')
           .select('*')
           .eq('user_id', user.id);
 
-        if (error) {
-          throw error;
+        if (existingError) {
+          throw existingError;
         }
 
-        if (data && data.length > 0) {
-          const mostRecentSub = data.sort((a, b) => 
+        if (existingData && existingData.length > 0) {
+          // Use the most recent subscription if multiple exist
+          const mostRecentSub = existingData.sort((a, b) => 
             new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
           )[0];
 
@@ -65,6 +69,15 @@ export const useSubscription = () => {
             user_id: mostRecentSub.user_id
           });
         } else {
+          // No subscription exists, create one if we haven't already started the process
+          if (isCreatingSubscription.current) {
+            return; // Prevent duplicate creation attempts
+          }
+          
+          isCreatingSubscription.current = true;
+          
+          // Double-check that a subscription doesn't exist before creating one
+          // This helps prevent race conditions in concurrent requests
           const { count: subscriptionCount, error: countError } = await supabase
             .from('subscriptions')
             .select('*', { count: 'exact', head: true })
@@ -88,49 +101,86 @@ export const useSubscription = () => {
               .single();
 
             if (createError) {
+              // If we get a duplicate key error here, try to fetch the existing subscription
+              if (createError.code === '23505') {
+                const { data: retryData, error: retryError } = await supabase
+                  .from('subscriptions')
+                  .select('*')
+                  .eq('user_id', user.id)
+                  .single();
+                  
+                if (retryError) {
+                  throw retryError;
+                }
+                
+                if (retryData) {
+                  setSubscription({
+                    id: retryData.id,
+                    status: retryData.status as SubscriptionStatus,
+                    free_trial_used: retryData.free_trial_used,
+                    presentations_generated: retryData.presentations_generated,
+                    payment_reference: retryData.payment_reference,
+                    is_active: retryData.is_active,
+                    amount: retryData.amount,
+                    created_at: retryData.created_at,
+                    updated_at: retryData.updated_at,
+                    expires_at: retryData.expires_at,
+                    user_id: retryData.user_id
+                  });
+                  isCreatingSubscription.current = false;
+                  return;
+                }
+              }
               throw createError;
             }
 
-            setSubscription({
-              id: newSub.id,
-              status: newSub.status as SubscriptionStatus,
-              free_trial_used: newSub.free_trial_used,
-              presentations_generated: newSub.presentations_generated,
-              payment_reference: newSub.payment_reference,
-              is_active: newSub.is_active,
-              amount: newSub.amount,
-              created_at: newSub.created_at,
-              updated_at: newSub.updated_at,
-              expires_at: newSub.expires_at,
-              user_id: newSub.user_id
-            });
+            if (newSub) {
+              setSubscription({
+                id: newSub.id,
+                status: newSub.status as SubscriptionStatus,
+                free_trial_used: newSub.free_trial_used,
+                presentations_generated: newSub.presentations_generated,
+                payment_reference: newSub.payment_reference,
+                is_active: newSub.is_active,
+                amount: newSub.amount,
+                created_at: newSub.created_at,
+                updated_at: newSub.updated_at,
+                expires_at: newSub.expires_at,
+                user_id: newSub.user_id
+              });
+            }
           } else {
-            const { data: existingSubs, error: fetchError } = await supabase
+            // If we reach here, a subscription was created after our initial check
+            const { data: latestSub, error: fetchError } = await supabase
               .from('subscriptions')
               .select('*')
-              .eq('user_id', user.id);
+              .eq('user_id', user.id)
+              .order('created_at', { ascending: false })
+              .limit(1)
+              .single();
               
             if (fetchError) {
               throw fetchError;
             }
             
-            if (existingSubs && existingSubs.length > 0) {
-              const sub = existingSubs[0];
+            if (latestSub) {
               setSubscription({
-                id: sub.id,
-                status: sub.status as SubscriptionStatus,
-                free_trial_used: sub.free_trial_used,
-                presentations_generated: sub.presentations_generated,
-                payment_reference: sub.payment_reference,
-                is_active: sub.is_active,
-                amount: sub.amount,
-                created_at: sub.created_at,
-                updated_at: sub.updated_at,
-                expires_at: sub.expires_at,
-                user_id: sub.user_id
+                id: latestSub.id,
+                status: latestSub.status as SubscriptionStatus,
+                free_trial_used: latestSub.free_trial_used,
+                presentations_generated: latestSub.presentations_generated,
+                payment_reference: latestSub.payment_reference,
+                is_active: latestSub.is_active,
+                amount: latestSub.amount,
+                created_at: latestSub.created_at,
+                updated_at: latestSub.updated_at,
+                expires_at: latestSub.expires_at,
+                user_id: latestSub.user_id
               });
             }
           }
+          
+          isCreatingSubscription.current = false;
         }
         
         fetchAttempted.current = true;
@@ -156,6 +206,8 @@ export const useSubscription = () => {
           setSubscription(fallbackSubscription);
           fetchAttempted.current = true;
         }
+        
+        isCreatingSubscription.current = false;
       } finally {
         setLoading(false);
       }
@@ -172,6 +224,7 @@ export const useSubscription = () => {
     if (user) {
       errorShown.current = false;
       fetchAttempted.current = false;
+      isCreatingSubscription.current = false;
     }
   }, [user]);
 
