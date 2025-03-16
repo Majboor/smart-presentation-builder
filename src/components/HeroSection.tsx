@@ -12,19 +12,31 @@ const HeroSection = () => {
 
   const handleCreateClick = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
-    e.stopPropagation(); // Add this to prevent any bubbling
-    const canProceed = checkAuth();
-    if (canProceed) {
-      navigate("/create");
+    e.stopPropagation();
+    
+    // Explicitly check the return value
+    const isAuthenticated = checkAuth();
+    
+    if (isAuthenticated) {
+      // Use a timeout to ensure the event propagation is fully stopped
+      setTimeout(() => {
+        navigate("/create");
+      }, 0);
     }
   };
 
   const handleTemplatesClick = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
-    e.stopPropagation(); // Add this to prevent any bubbling
-    const canProceed = checkAuth();
-    if (canProceed) {
-      navigate("/templates");
+    e.stopPropagation();
+    
+    // Explicitly check the return value
+    const isAuthenticated = checkAuth();
+    
+    if (isAuthenticated) {
+      // Use a timeout to ensure the event propagation is fully stopped
+      setTimeout(() => {
+        navigate("/templates");
+      }, 0);
     }
   };
 
