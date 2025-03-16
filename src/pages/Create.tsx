@@ -28,8 +28,9 @@ const Create = () => {
     }
   }, [canCreatePresentation, user, navigate]);
 
+  // Return null during redirect to prevent rendering the editor
   if (!user) {
-    return null; // Don't render anything while redirecting
+    return null;
   }
 
   return (

@@ -11,32 +11,24 @@ const HeroSection = () => {
   const { checkAuth, showLoginPrompt, setShowLoginPrompt } = useAuthCheck();
 
   const handleCreateClick = (e: React.MouseEvent<HTMLButtonElement>) => {
+    // Explicitly prevent default
     e.preventDefault();
     e.stopPropagation();
     
-    // Explicitly check the return value
-    const isAuthenticated = checkAuth();
-    
-    if (isAuthenticated) {
-      // Use a timeout to ensure the event propagation is fully stopped
-      setTimeout(() => {
-        navigate("/create");
-      }, 0);
+    if (checkAuth()) {
+      // Navigate directly without setTimeout
+      navigate("/create");
     }
   };
 
   const handleTemplatesClick = (e: React.MouseEvent<HTMLButtonElement>) => {
+    // Explicitly prevent default
     e.preventDefault();
     e.stopPropagation();
     
-    // Explicitly check the return value
-    const isAuthenticated = checkAuth();
-    
-    if (isAuthenticated) {
-      // Use a timeout to ensure the event propagation is fully stopped
-      setTimeout(() => {
-        navigate("/templates");
-      }, 0);
+    if (checkAuth()) {
+      // Navigate directly without setTimeout
+      navigate("/templates");
     }
   };
 
@@ -61,10 +53,10 @@ const HeroSection = () => {
         </p>
         <div className="flex flex-col sm:flex-row gap-4 justify-center pt-4">
           <Button 
-            type="button" 
-            onClick={handleCreateClick} 
-            size="lg" 
             className="group"
+            size="lg"
+            onClick={handleCreateClick}
+            type="button" // Explicitly set button type
           >
             <span className="flex items-center gap-1">
               Create your presentation
@@ -75,11 +67,11 @@ const HeroSection = () => {
             </span>
           </Button>
           <Button
-            type="button"
-            onClick={handleTemplatesClick}
-            size="lg"
-            variant="outline"
             className="hover:bg-secondary/80"
+            variant="outline"
+            size="lg"
+            onClick={handleTemplatesClick}
+            type="button" // Explicitly set button type
           >
             View templates
           </Button>
