@@ -12,7 +12,6 @@ export interface Subscription {
   free_trial_used: boolean;
   presentations_generated: number;
   payment_reference?: string;
-  // Adding these fields to match the database schema
   is_active: boolean;
   amount?: number;
   created_at: string;
@@ -47,12 +46,11 @@ export const useSubscription = () => {
         }
 
         // Map the database fields to our Subscription interface
-        // Making sure all required fields are present
         setSubscription({
           id: data.id,
-          status: data.status || 'free',
-          free_trial_used: data.free_trial_used || false,
-          presentations_generated: data.presentations_generated || 0,
+          status: data.status,
+          free_trial_used: data.free_trial_used,
+          presentations_generated: data.presentations_generated,
           payment_reference: data.payment_reference,
           is_active: data.is_active,
           amount: data.amount,
@@ -93,8 +91,7 @@ export const useSubscription = () => {
         throw error;
       }
 
-      // Update the local subscription object with the new data,
-      // including all the required fields
+      // Update the local subscription object with the new data
       setSubscription({
         ...subscription,
         presentations_generated: newCount,
