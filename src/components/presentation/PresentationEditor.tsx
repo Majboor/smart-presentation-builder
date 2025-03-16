@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
@@ -35,7 +36,7 @@ const PresentationEditor = () => {
   const [selectedTemplate, setSelectedTemplate] = useState<string | null>(null);
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [paymentDialogOpen, setPaymentDialogOpen] = useState(false);
-  const { canCreatePresentation, incrementPresentationCount } = useSubscription();
+  const { canCreatePresentation, incrementPresentationCount, subscription } = useSubscription();
 
   const [slides, setSlides] = useState<Array<{ title: string; content: string; image?: string }>>([
     {
@@ -45,12 +46,13 @@ const PresentationEditor = () => {
     },
   ]);
 
-  // Check subscription status on mount
+  // Only check subscription on mount once, and only show payment dialog if they've
+  // already used their free trial (presentations_generated > 0)
   useEffect(() => {
-    if (user && !canCreatePresentation()) {
+    if (user && subscription && subscription.presentations_generated > 0 && !canCreatePresentation()) {
       setPaymentDialogOpen(true);
     }
-  }, [user, canCreatePresentation]);
+  }, [user, subscription, canCreatePresentation]);
 
   const handleGeneratePresentation = () => {
     if (!prompt.trim()) {
@@ -58,7 +60,8 @@ const PresentationEditor = () => {
       return;
     }
 
-    if (!canCreatePresentation()) {
+    // Only block generation and show payment dialog if they've already used their free trial
+    if (subscription && subscription.presentations_generated > 0 && !canCreatePresentation()) {
       setPaymentDialogOpen(true);
       toast.info("You've used your free trial. Please subscribe for unlimited access.");
       return;

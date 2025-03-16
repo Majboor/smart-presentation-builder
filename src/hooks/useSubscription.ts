@@ -59,7 +59,7 @@ export const useSubscription = () => {
           // Map the database fields to our Subscription interface
           setSubscription({
             id: mostRecentSub.id,
-            status: mostRecentSub.status as SubscriptionStatus, // Cast to SubscriptionStatus type
+            status: mostRecentSub.status as SubscriptionStatus,
             free_trial_used: mostRecentSub.free_trial_used,
             presentations_generated: mostRecentSub.presentations_generated,
             payment_reference: mostRecentSub.payment_reference,
@@ -195,8 +195,9 @@ export const useSubscription = () => {
 
     try {
       const newCount = subscription.presentations_generated + 1;
-      // Only mark free trial as used if this is their first presentation
-      const free_trial_used = newCount > 0;
+      // Only mark free trial as used when they've completed their first presentation
+      // This means their second attempt would require payment
+      const free_trial_used = newCount >= 1;
       
       // Update local state immediately for better UX
       setSubscription({
@@ -279,8 +280,10 @@ export const useSubscription = () => {
   const canCreatePresentation = (): boolean => {
     if (!subscription) return false;
     
-    // User can create a presentation if they are on a paid plan OR haven't used their free trial yet
-    return subscription.status === 'paid' || !subscription.free_trial_used;
+    // User can create a presentation if:
+    // 1. They are on a paid plan, OR
+    // 2. They haven't used their free trial yet (presentations_generated is 0)
+    return subscription.status === 'paid' || subscription.presentations_generated === 0;
   };
 
   return {

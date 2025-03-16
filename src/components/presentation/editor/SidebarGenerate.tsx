@@ -29,14 +29,11 @@ const SidebarGenerate: React.FC<SidebarGenerateProps> = ({
   templatePrompts,
 }) => {
   const { checkAuth, showLoginPrompt, setShowLoginPrompt } = useAuthCheck();
-  const { canCreatePresentation } = useSubscription();
+  const { canCreatePresentation, subscription } = useSubscription();
 
   const handleGenerate = () => {
     if (checkAuth()) {
-      if (!canCreatePresentation()) {
-        // If can't create presentation, don't proceed with generation
-        return;
-      }
+      // Allow generating if it's their first presentation OR they're paid
       handleGeneratePresentation();
     }
   };
@@ -48,7 +45,8 @@ const SidebarGenerate: React.FC<SidebarGenerateProps> = ({
   };
 
   // Determine if the generate button should be disabled
-  const isGenerateDisabled = loading || !canCreatePresentation();
+  // Only disable if they've already used their free trial AND are not on a paid plan
+  const isGenerateDisabled = loading || (subscription && subscription.presentations_generated > 0 && !canCreatePresentation());
 
   return (
     <div className="space-y-4">
@@ -75,7 +73,7 @@ const SidebarGenerate: React.FC<SidebarGenerateProps> = ({
           onClick={handleGenerate}
           className="flex-1 gap-1"
           disabled={isGenerateDisabled}
-          title={!canCreatePresentation() ? "Free trial used. Please subscribe." : ""}
+          title={isGenerateDisabled ? "Free trial used. Please subscribe." : ""}
         >
           {loading ? (
             <>
@@ -109,13 +107,9 @@ const SidebarGenerate: React.FC<SidebarGenerateProps> = ({
               variant={selectedTemplate === template ? "default" : "outline"}
               size="sm"
               className="h-auto py-2 justify-start"
-              disabled={!canCreatePresentation()}
+              disabled={isGenerateDisabled}
               onClick={() => {
                 if (checkAuth()) {
-                  if (!canCreatePresentation()) {
-                    // If can't create presentation, don't proceed with template selection
-                    return;
-                  }
                   handleTemplateSelect(template);
                 }
               }}
