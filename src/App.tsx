@@ -12,22 +12,72 @@ import NotFound from "./pages/NotFound";
 import PresentationViewer from "./components/presentation/PresentationViewer";
 import { AuthProvider } from "./contexts/AuthContext";
 import PaymentSuccess from "./pages/PaymentSuccess";
+import { useAuth } from "./contexts/AuthContext";
+import { Loader2 } from "lucide-react";
 
 const queryClient = new QueryClient();
 
 // Route guard component to protect routes that require authentication
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
-  // Get auth state from localStorage for initial render to avoid flickering
-  const sessionStr = localStorage.getItem('supabase.auth.token');
-  const hasSession = !!sessionStr;
-
-  if (!hasSession) {
-    // Instead of redirecting to /auth, return the Navigate component
+  const { user, loading } = useAuth();
+  
+  // Show loading indicator while checking auth state
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+  
+  // Redirect to auth page if not logged in
+  if (!user) {
     return <Navigate to="/auth" />;
   }
 
   return <>{children}</>;
 };
+
+const AppRoutes = () => (
+  <Routes>
+    <Route path="/" element={<Index />} />
+    <Route path="/auth" element={<Auth />} />
+    <Route 
+      path="/account" 
+      element={
+        <ProtectedRoute>
+          <Account />
+        </ProtectedRoute>
+      } 
+    />
+    <Route 
+      path="/create" 
+      element={
+        <ProtectedRoute>
+          <Create />
+        </ProtectedRoute>
+      } 
+    />
+    <Route 
+      path="/present/:id" 
+      element={
+        <ProtectedRoute>
+          <PresentationViewer />
+        </ProtectedRoute>
+      } 
+    />
+    <Route 
+      path="/payment-success" 
+      element={
+        <ProtectedRoute>
+          <PaymentSuccess />
+        </ProtectedRoute>
+      } 
+    />
+    {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+    <Route path="*" element={<NotFound />} />
+  </Routes>
+);
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
@@ -36,44 +86,7 @@ const App = () => (
         <Toaster />
         <Sonner position="top-center" closeButton />
         <BrowserRouter>
-          <Routes>
-            <Route path="/" element={<Index />} />
-            <Route path="/auth" element={<Auth />} />
-            <Route 
-              path="/account" 
-              element={
-                <ProtectedRoute>
-                  <Account />
-                </ProtectedRoute>
-              } 
-            />
-            <Route 
-              path="/create" 
-              element={
-                <ProtectedRoute>
-                  <Create />
-                </ProtectedRoute>
-              } 
-            />
-            <Route 
-              path="/present/:id" 
-              element={
-                <ProtectedRoute>
-                  <PresentationViewer />
-                </ProtectedRoute>
-              } 
-            />
-            <Route 
-              path="/payment-success" 
-              element={
-                <ProtectedRoute>
-                  <PaymentSuccess />
-                </ProtectedRoute>
-              } 
-            />
-            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-            <Route path="*" element={<NotFound />} />
-          </Routes>
+          <AppRoutes />
         </BrowserRouter>
       </AuthProvider>
     </TooltipProvider>

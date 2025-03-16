@@ -1,4 +1,3 @@
-
 import React from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useSubscription } from "@/hooks/useSubscription";
@@ -8,25 +7,16 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Loader2, User, CreditCard, Crown, Calendar, CheckCircle, Clock } from "lucide-react";
 import { format } from "date-fns";
-import { useNavigate } from "react-router-dom";
 import PaymentDialog from "@/components/payment/PaymentDialog";
 import { Badge } from "@/components/ui/badge";
 
 const Account = () => {
   const { user, loading: authLoading } = useAuth();
   const { subscription, loading: subLoading } = useSubscription();
-  const navigate = useNavigate();
   const [paymentDialogOpen, setPaymentDialogOpen] = React.useState(false);
   
   const isPremium = subscription?.status === 'paid';
   const isLoading = authLoading || subLoading;
-
-  // Redirect to auth page if not logged in
-  React.useEffect(() => {
-    if (!authLoading && !user) {
-      navigate("/auth");
-    }
-  }, [authLoading, user, navigate]);
 
   const handleSubscribe = () => {
     setPaymentDialogOpen(true);

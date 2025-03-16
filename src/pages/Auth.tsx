@@ -12,7 +12,7 @@ const Auth = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
-  const { signIn, signUp, user, isLoading } = useAuth();
+  const { signIn, signUp, user, isLoading, loading } = useAuth();
   const navigate = useNavigate();
 
   // Redirect if user is already logged in
@@ -21,6 +21,15 @@ const Auth = () => {
       navigate("/");
     }
   }, [user, navigate]);
+
+  // If still checking auth state, show loading
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-secondary/10 flex flex-col items-center justify-center px-4">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -49,6 +58,11 @@ const Auth = () => {
       setError(error.message);
     }
   };
+
+  // Don't render the auth form if the user is logged in
+  if (user) {
+    return null;
+  }
 
   return (
     <div className="min-h-screen bg-secondary/10 flex flex-col items-center justify-center px-4">
