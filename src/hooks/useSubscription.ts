@@ -113,7 +113,8 @@ export const useSubscription = () => {
 
     try {
       const newCount = subscription.presentations_generated + 1;
-      const free_trial_used = newCount > 0; // Mark as used after the first presentation
+      // Only mark free trial as used if this is their first presentation
+      const free_trial_used = newCount > 0;
       
       const { data, error } = await supabase
         .from('subscriptions')
@@ -193,6 +194,8 @@ export const useSubscription = () => {
 
   const canCreatePresentation = (): boolean => {
     if (!subscription) return false;
+    
+    // User can create a presentation if they are on a paid plan OR haven't used their free trial yet
     return subscription.status === 'paid' || !subscription.free_trial_used;
   };
 
