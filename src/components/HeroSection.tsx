@@ -10,15 +10,13 @@ const HeroSection = () => {
   const navigate = useNavigate();
   const { checkAuth, showLoginPrompt, setShowLoginPrompt } = useAuthCheck();
 
-  const handleCreateClick = (e: React.MouseEvent) => {
-    e.preventDefault(); // Prevent default action
+  const handleCreateClick = () => {
     if (checkAuth()) {
       navigate("/create");
     }
   };
 
-  const handleTemplatesClick = (e: React.MouseEvent) => {
-    e.preventDefault(); // Prevent default action
+  const handleTemplatesClick = () => {
     if (checkAuth()) {
       navigate("/templates");
     }
