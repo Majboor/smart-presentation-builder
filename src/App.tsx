@@ -7,6 +7,7 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import Index from "./pages/Index";
 import Create from "./pages/Create";
 import Auth from "./pages/Auth";
+import Account from "./pages/Account";
 import NotFound from "./pages/NotFound";
 import PresentationViewer from "./components/presentation/PresentationViewer";
 import { AuthProvider } from "./contexts/AuthContext";
@@ -36,6 +37,14 @@ const App = () => (
           <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/auth" element={<Auth />} />
+            <Route 
+              path="/account" 
+              element={
+                <ProtectedRoute>
+                  <Account />
+                </ProtectedRoute>
+              } 
+            />
             <Route 
               path="/create" 
               element={

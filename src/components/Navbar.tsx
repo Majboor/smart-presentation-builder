@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { ChevronRight, LogOut, User, Crown } from "lucide-react";
+import { ChevronRight, LogOut, User, Crown, Settings } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useSubscription } from "@/hooks/useSubscription";
 import { Badge } from "@/components/ui/badge";
@@ -114,6 +114,12 @@ const Navbar: React.FC<NavbarProps> = ({ onPricingClick }) => {
                     )}
                   </DropdownMenuLabel>
                   <DropdownMenuSeparator />
+                  <DropdownMenuItem asChild>
+                    <Link to="/account" className="flex items-center gap-2 cursor-pointer">
+                      <Settings size={16} />
+                      Account Settings
+                    </Link>
+                  </DropdownMenuItem>
                   <DropdownMenuItem onClick={handleSignOut} className="gap-2 cursor-pointer">
                     <LogOut size={16} />
                     Sign out
