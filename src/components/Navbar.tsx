@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { ChevronRight, LogOut, User, Crown, Settings } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
@@ -38,17 +38,20 @@ const Navbar: React.FC<NavbarProps> = ({ onPricingClick }) => {
     return () => window.removeEventListener("scroll", handleScroll);
   }, [scrolled]);
 
-  const handleSignOut = () => {
+  const handleSignOut = (e: React.MouseEvent) => {
+    e.preventDefault();
     signOut();
     navigate("/");
   };
 
   const handleNavigation = (path: string) => (e: React.MouseEvent) => {
     e.preventDefault();
+    e.stopPropagation();
     navigate(path);
   };
 
-  const handlePricingClick = () => {
+  const handlePricingClick = (e: React.MouseEvent) => {
+    e.preventDefault();
     if (onPricingClick) {
       onPricingClick();
     }
